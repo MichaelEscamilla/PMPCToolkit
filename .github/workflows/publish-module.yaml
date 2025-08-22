@@ -16,7 +16,7 @@ jobs:
         with:
           repository: MichaelEscamilla/PMPCToolkit
           path: PMPCToolkit
-          ref: main
+          ref: master  # Changed from 'main' to 'master'
 
       - name: Publish to PowerShell Gallery
         run: |

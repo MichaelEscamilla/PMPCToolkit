@@ -38,6 +38,15 @@
 
     PrivateData          = @{
         PSData = @{
+            PrivateData = @{
+                PSData = @{
+                    Tags       = @('PatchMyPC', 'Toolkit')
+                    ProjectUri = 'https://github.com/MichaelEscamilla/PMPCToolkit'
+                    LicenseUri = 'https://github.com/MichaelEscamilla/PMPCToolkit/blob/master/LICENSE'
+                    # IconUri = 'https://path/to/icon.png'
+                    ReleaseNotes = 'Initial release of PMPCToolkit'
+                }
+            }
         }
     }
 }
