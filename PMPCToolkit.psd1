@@ -3,10 +3,10 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.1'
+    ModuleVersion        = '0.0.2'
 
     # Supported PSEditions
-    CompatiblePSEditions = '5.1'
+    CompatiblePSEditions = @('Desktop', 'Core')
 
     # ID used to uniquely identify this module
     GUID                 = 'e3b2a7c6-4f8a-4e6a-9b2a-2c4e8d6f1a7b'
@@ -19,6 +19,12 @@
 
     # Copyright statement for this module
     Copyright            = '(c) Michael Escamilla. All rights reserved.'
+
+    # Description of the functionality provided by this module
+    Description          = 'Patch My PC Toolkit'
+
+    # Minimum version of the PowerShell engine required by this module
+    PowerShellVersion    = '5.1'
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @(
