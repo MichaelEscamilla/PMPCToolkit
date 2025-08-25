@@ -44,16 +44,17 @@ function Read-CMTraceLogLine {
                 # Split metadata into an array
                 $metaarray = $metadata[1] -split '"'
 
+                <##>
                 # Rebuild the result into a custom PSObject
-                $result += $logtext | select-object @{
-                    Label = "LogText"; Expression = { $logtext } },
-                    @{Label = "Type"; Expression = { [LogType]$metaarray[9] } },
-                    @{Label = "Component"; Expression = { $metaarray[5] } },
-                    @{Label = "DateTime"; Expression = { [datetime]::ParseExact(($metaarray[3] + $metaarray[1]).ToString(), "MM-dd-yyyyHH:mm:ss.ffffff", $null) } },
-                    @{Label = "Thread"; Expression = { $metaarray[11] } }
+                $result = [PSCustomObject]@{
+                    LogText   = $logtext
+                    Type      = [LogType]$metaarray[9]
+                    Component = $metaarray[5]
+                    DateTime  = [datetime]::ParseExact(($metaarray[3] + $metaarray[1]).ToString(), "M-d-yyyyHH:mm:ss.fffffff", $null)
+                    Thread    = $metaarray[11]
+                }
             }        
         }
-
         return $result
     }
 }

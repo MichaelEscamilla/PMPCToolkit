@@ -1,3 +1,8 @@
+<#
+    .DESCRIPTION
+        Stolen From: https://www.deploymentresearch.com/read-cmlogs-with-powershell-and-hello-world/
+#>
+
 function Get-AppWorkloadPolicies {
     [CmdletBinding()]
     param (
@@ -12,35 +17,67 @@ function Get-AppWorkloadPolicies {
     }
 
     # Policy Pattern
-    $Pattern_Start = '^\<\!\[LOG\[Get policies = \[\{'
-    $Pattern_Start_Replace = '^\<\!\[LOG\[Get policies ='
-    $Pattern_End = '\]LOG\]!>.*'
+    [string]$Pattern = '<!\[LOG\[Get policies = \[(.*?)\]\]'
 
-    # Search Log File(s) for the Start Pattern
+    # Search Log File(s) for the Pattern
     $Match = $null
-    
-    $Match = Select-String -Path "$($Path)" -Pattern $Pattern_Start
+    $Match = Select-String -Path "$($Path)" -Pattern $Pattern
 
-    #$Match = Select-String -Path $Path -Pattern '^\<\!\[LOG\[Get policies = \[\{'
-
-    # Check if the Start Pattern was found
+    # Check if the Pattern was found
     if ($Match) {
-
         # Parse the Line for the Policy JSON by removing the Start and End Pattern
-        $json = $null
-        $json = $Match.Line -replace '^\<\!\[LOG\[Get policies =', '' -replace '\]LOG\]!>.*', ''
+        $PolicyJson = $null
+        $PolicyJson = $Match.Line -replace '^\<\!\[LOG\[Get policies = ', '' -replace '\]LOG\]!>.*', ''
+
+        # Parse the Line for the Date
+        $PolicyDate = Read-CMTraceLogLine -LineContent "$($Match.Line)"
 
         # Convert the String from JSON
         $Policy = $null
-        $Policy = $json | ConvertFrom-Json
+        $Policy = $PolicyJson | ConvertFrom-Json -ErrorAction Stop
 
         $Policy | ForEach-Object {
 
+            # Start Building PSCustomObject
+            $PSCustomObject = [PSCustomObject]@{
+                Date       = $PolicyDate.DateTime
+                Id         = $_.Id
+                Name       = $_.Name
+                Intent     = switch ($_.Intent) {
+                    0 { 'Not Targeted' }
+                    1 { 'Available' }
+                    3 { 'Required' }
+                    4 { 'Uninstall' }
+                    Default { $_.Intent }
+                }
+                Context    = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
+                    0 { 'USER' }
+                    1 { 'SYSTEM' }
+                    Default { $InstallEx.RunAs }
+                }
+                TimeFormat = $_.StartDeadlineEx.TimeFormat
+                StartTime  = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
+                Deadline   = if ($_.StartDeadlineEx.Deadline -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.Deadline }
+            }
+
+            # Add Context to PSCustomObject
+            $addMemberSplat = @{
+                MemberType = 'NoteProperty'
+                Name       = 'Context1'
+                Value      = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
+                    0 { 'USER' }
+                    1 { 'SYSTEM' }
+                    Default { $InstallEx.RunAs }
+                }
+            }
+            $PSCustomObject | Add-Member @addMemberSplat
+
+            <#
             # Detection Rules
             $DetectionRule = "$($_.DetectionRule)" | ConvertFrom-Json
             if (!($DetectionRule)) {
                 $DetectionRule = $null
-            }
+            }d
             else {
                 $DetectionRuleScript = $DetectionRule.DetectionText | ConvertFrom-Json | Select-Object -ExpandProperty ScriptBody -ErrorAction SilentlyContinue
                 if (($null -ne $DetectionRuleScript) -and ($DetectionRuleScript -ne '')) {
@@ -110,6 +147,9 @@ function Get-AppWorkloadPolicies {
                 DetectionType      = $DetectionRule | Select-Object -ExpandProperty DetectionType
                 DetectionScript    = $DetectionRuleScript
             }
+            #>
+
+            $PSCustomObject | Sort-Object Name
 
             $scriptBody = $null
             $RequirementRulesScript = $null

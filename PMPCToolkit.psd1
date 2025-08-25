@@ -33,6 +33,7 @@
         'Invoke-PublisherSettingsBackupExtract'
         'Get-HashFromDigest'
         'Get-AppWorkloadPolicies'
+        'Get-AppWorkloadPoliciesTest'
         'Get-SelfUpdaterRegistryEntries'
     )
 
