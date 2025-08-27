@@ -10,7 +10,8 @@ function Get-AppWorkloadPoliciesTest {
         [string]$Path = "$(Get-Location)\AppWorkload*.log",
         [switch]$Latest,
         [switch]$DetectionScript,
-        [switch]$RequirementScript
+        [switch]$RequirementScript,
+        [switch]$GRSInfo
     )
 
     Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for [AppWorkload*.log]"
@@ -94,7 +95,7 @@ function Get-AppWorkloadPoliciesTest {
                         $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
 
                         $DetectionObject = [PSCustomObject]@{
-                            AppName = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
+                            AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
                             AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
                         }
 
@@ -114,7 +115,7 @@ function Get-AppWorkloadPoliciesTest {
                     }
                     else {
                         $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value 'Not a Script'
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Signer' -Value 'Not Signed'
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Signer' -Value 'N/A'
                     }
                 }
 
@@ -144,8 +145,51 @@ function Get-AppWorkloadPoliciesTest {
                     }
                     else {
                         $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value 'Not a Script'
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Signer' -Value 'Not Signed'
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Signer' -Value 'N/A'
                     }
+                }
+
+                # Get GRS Info
+                if ($GRSInfo) {
+
+                    # GRS Line Pattern
+                    [string]$grsPattern = '<!\[LOG\[\[Win32App\]\[GRSManager\].*'
+
+                    # Search for GRS Info (Latest)
+                    $GRSInfoMatches = Select-String -Path "$($Path)" -Pattern $grsPattern | Select-Object -Last 1
+
+                    # ... sanitize the entries to remove the prefix and filter by win32AppID...
+                    foreach ($GRSMatch in $GRSInfoMatches) {
+                        $entry = $GRSMatch -replace '^\<\!\[LOG\[\[Win32App\]\[GRSManager\] ', ''
+                        If ($entry -like "*$($_.Id)*") {
+                            $sanitizedEntries += $entry
+                        }
+                    }
+
+                    # GRS App ID Pattern
+                    [string]$grsAppIdPattern = 'Found GRS value: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}) at key (.+)'
+
+                    $latestEntry = $sanitizedEntries |
+                    Where-Object { $_ -match $grsAppIdPattern } |
+                    Sort-Object { [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null) } -Descending |
+                    Select-Object -First 1
+
+                    if ($latestEntry -match $grsAppIdPattern) {
+                        $lastInstallAttempt = [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null)
+                        $rawRegistryKey = $matches[2]
+                        $formattedRegistryKey = $rawRegistryKey -replace "=.*", "="
+                        $registryKeyToDelete = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\$formattedRegistryKey"
+
+                        $retryStart = $lastInstallAttempt.AddHours(24)
+                        $retryEnd = $lastInstallAttempt.AddHours(30)
+
+                        [PSCustomObject]@{
+                            'Last Install Attempt (UTC)'                = $lastInstallAttempt
+                            'RegKeyToDelete'                            = $registryKeyToDelete
+                        }
+                    }
+
+                    $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value $GRSInfo
                 }
 
                 # Add PSCustomObject to List
