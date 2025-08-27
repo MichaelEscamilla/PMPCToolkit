@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.3'
+    ModuleVersion        = '0.0.4'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -39,15 +39,11 @@
 
     PrivateData          = @{
         PSData = @{
-            PrivateData = @{
-                PSData = @{
-                    Tags       = @('PatchMyPC', 'Toolkit')
-                    ProjectUri = 'https://github.com/MichaelEscamilla/PMPCToolkit'
-                    LicenseUri = 'https://github.com/MichaelEscamilla/PMPCToolkit/blob/master/LICENSE'
-                    # IconUri = 'https://path/to/icon.png'
-                    ReleaseNotes = 'Initial release of PMPCToolkit'
-                }
-            }
+            Tags         = @('PatchMyPC', 'Toolkit')
+            ProjectUri   = 'https://github.com/MichaelEscamilla/PMPCToolkit'
+            LicenseUri   = 'https://github.com/MichaelEscamilla/PMPCToolkit/blob/master/LICENSE'
+            # IconUri = 'https://path/to/icon.png'
+            ReleaseNotes = 'Initial release of PMPCToolkit'
         }
     }
 }

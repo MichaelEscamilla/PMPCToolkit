@@ -51,37 +51,38 @@ function Get-AppWorkloadPoliciesTest {
             $Policy | ForEach-Object {
                 # Build a PSCustomObject
                 $CusObj = [PSCustomObject] @{
-                    'Policy Date' = $PolicyDate.DateTime
-                    'App Id'      = $_.Id
-                    'App Name'    = $_.Name
-                    Revision      = $_.Version
-                    Intent        = switch ($_.Intent) {
+                    'Policy Date'      = $PolicyDate.DateTime
+                    'App Id'           = $_.Id
+                    'App Name'         = $_.Name
+                    Revision           = $_.Version
+                    Intent             = switch ($_.Intent) {
                         0 { 'Not Targeted' }
                         1 { 'Available' }
                         3 { 'Required' }
                         4 { 'Uninstall' }
                         Default { $_.Intent }
                     }
-                    Context       = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
+                    Context            = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
                         0 { 'USER' }
                         1 { 'SYSTEM' }
                         Default { $InstallEx.RunAs }
                     }
-                    TimeFormat    = $_.StartDeadlineEx.TimeFormat
-                    StartTime     = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
-                    Deadline      = if ($_.StartDeadlineEx.Deadline -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.Deadline }
-                    DO            = switch ($_.DOPriority) {
+                    TimeFormat         = $_.StartDeadlineEx.TimeFormat
+                    StartTime          = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
+                    Deadline           = if ($_.StartDeadlineEx.Deadline -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.Deadline }
+                    DO                 = switch ($_.DOPriority) {
                         0 { 'Background' }
                         1 { 'Foreground' }
                         Default { $_.DOPriority }
                     }
-                    Notifications = switch ($_.AvailableAppEnforcement) {
+                    Notifications      = switch ($_.AvailableAppEnforcement) {
                         0 { 'Show All' }
                         1 { 'On Restart' }
                         2 { '2' }
                         3 { 'Hide All' }
                         Default { $_.NotificationPriority }
                     }
+                    InstallCommandLine = $_.InstallCommandLine
                 }
 
                 # Add Detection Script to PSCustomObject
@@ -93,14 +94,19 @@ function Get-AppWorkloadPoliciesTest {
                         $DetectionScriptValue = (ConvertFrom-Json ($DetectionScriptValue.DetectionText) | Select-Object -ExpandProperty ScriptBody -ErrorAction SilentlyContinue)
                         # Decode Base64
                         $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
-
-                        $DetectionObject = [PSCustomObject]@{
-                            AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
-                            AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
+                        
+                        if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            $DetectionObject = [PSCustomObject]@{
+                                AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
+                                AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
+                            }
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionObject
                         }
-
-                        # Add to PSCustomObject
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionObject
+                        else {
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionScriptValue
+                        }
 
                         # Check Script Signature Signer
                         if ($DetectionScriptValue -match '# SIG # Begin signature block') {
@@ -129,8 +135,18 @@ function Get-AppWorkloadPoliciesTest {
                         # Decode Base64
                         $RequirementScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($RequirementScriptValue))
 
-                        # Add to PSCustomObject
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value ($RequirementScriptValue)
+                        if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            $RequirementObject = [PSCustomObject]@{
+                                AppName    = $(Get-PowerShellVariables -ScriptContent $RequirementScriptValue -VariableName "z")
+                                AppVersion = $(Get-PowerShellVariables -ScriptContent $RequirementScriptValue -VariableName "d")
+                            }
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementObject
+                        }
+                        else {
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementScriptValue
+                        }
 
                         # Check Script Signature Signer
                         if ($RequirementScriptValue -match '# SIG # Begin signature block') {
