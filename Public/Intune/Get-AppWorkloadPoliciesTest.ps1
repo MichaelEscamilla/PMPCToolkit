@@ -167,17 +167,24 @@ function Get-AppWorkloadPoliciesTest {
 
                 # Get GRS Info
                 if ($GRSInfo) {
-
+                    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for GRS Info for App ID [$($_.Id)]"
                     # GRS Line Pattern
                     [string]$grsPattern = '<!\[LOG\[\[Win32App\]\[GRSManager\].*'
 
                     # Search for GRS Info (Latest)
-                    $GRSInfoMatches = Select-String -Path "$($Path)" -Pattern $grsPattern | Select-Object -Last 1
+                    $GRSInfoMatches = Select-String -Path "$($Path)" -Pattern $grsPattern
+                    #$GRSInfoMatches = [regex]::Matches($(Get-Content $File -Raw), $grsPattern)
+                    #$GRSInfoMatches = [regex]::Matches($(Get-Content $Path -Raw), $grsPattern)
 
                     # ... sanitize the entries to remove the prefix and filter by win32AppID...
+                    $sanitizedEntries = @()
                     foreach ($GRSMatch in $GRSInfoMatches) {
-                        $entry = $GRSMatch -replace '^\<\!\[LOG\[\[Win32App\]\[GRSManager\] ', ''
-                        If ($entry -like "*$($_.Id)*") {
+                        # GRS Sanitize Line Pattern
+                        [string]$grsSanitizePattern = '<!\[LOG\[\[Win32App\]\[GRSManager\]. '
+
+                        $entry = $GRSMatch -replace $grsSanitizePattern, ''
+                        #Write-Host -ForegroundColor DarkGray "GRS Entry: $entry"
+                        if ($entry -like "*$($_.Id)*") {
                             $sanitizedEntries += $entry
                         }
                     }
@@ -189,23 +196,31 @@ function Get-AppWorkloadPoliciesTest {
                     Where-Object { $_ -match $grsAppIdPattern } |
                     Sort-Object { [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null) } -Descending |
                     Select-Object -First 1
+                    Write-Host "Latest:"
+                    $latestEntry
+                    Write-Host "End"
 
                     if ($latestEntry -match $grsAppIdPattern) {
+                        Write-Host "Found Latest GRS"
                         $lastInstallAttempt = [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null)
+                        Write-Host "Last Install Attempt: $lastInstallAttempt"
                         $rawRegistryKey = $matches[2]
+                        Write-Host "Raw Registry Key: $rawRegistryKey"
                         $formattedRegistryKey = $rawRegistryKey -replace "=.*", "="
+                        Write-Host "Formatted Registry Key: $formattedRegistryKey"
                         $registryKeyToDelete = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\$formattedRegistryKey"
+                        Write-Host "Registry Key to Delete: $registryKeyToDelete"
 
-                        $retryStart = $lastInstallAttempt.AddHours(24)
-                        $retryEnd = $lastInstallAttempt.AddHours(30)
-
-                        [PSCustomObject]@{
-                            'Last Install Attempt (UTC)'                = $lastInstallAttempt
-                            'RegKeyToDelete'                            = $registryKeyToDelete
+                        $GRSInformation = $null
+                        $GRSInformation = [PSCustomObject]@{
+                            'Last Install Attempt (UTC)' = $lastInstallAttempt
+                            'RegKeyToDelete'             = $registryKeyToDelete
                         }
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value $($GRSInformation.'Last Install Attempt (UTC)')
+                    } else {
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value "N/A"
                     }
 
-                    $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value $GRSInfo
                 }
 
                 # Add PSCustomObject to List
