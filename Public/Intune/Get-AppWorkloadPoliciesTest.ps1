@@ -11,7 +11,8 @@ function Get-AppWorkloadPoliciesTest {
         [switch]$Latest,
         [switch]$DetectionScript,
         [switch]$RequirementScript,
-        [switch]$GRSInfo
+        [switch]$GRSInfo,
+        [switch]$UninstallCommand
     )
 
     Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for [AppWorkload*.log]"
@@ -83,6 +84,7 @@ function Get-AppWorkloadPoliciesTest {
                         Default { $_.NotificationPriority }
                     }
                     InstallCommandLine = $_.InstallCommandLine
+                    UninstallCommandLine = $_.UninstallCommandLine
                 }
 
                 # Add Detection Script to PSCustomObject
@@ -142,6 +144,7 @@ function Get-AppWorkloadPoliciesTest {
                             }
                             # Add to PSCustomObject
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementObject
+                            #$CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementScriptValue
                         }
                         else {
                             # Add to PSCustomObject
