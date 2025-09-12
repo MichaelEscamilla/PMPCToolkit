@@ -3,7 +3,7 @@
         Stolen From: https://www.deploymentresearch.com/read-cmlogs-with-powershell-and-hello-world/
 #>
 
-function Get-AppWorkloadPoliciesTest {
+function Get-AppWorkloadPolicies {
     [CmdletBinding()]
     param (
         [string]
