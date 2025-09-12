@@ -9,10 +9,10 @@ function Get-AppWorkloadPoliciesTest {
         [string]
         [string]$Path = "$(Get-Location)\AppWorkload*.log",
         [switch]$Latest,
+        [switch]$UninstallCommand,
         [switch]$DetectionScript,
         [switch]$RequirementScript,
-        [switch]$GRSInfo,
-        [switch]$UninstallCommand
+        [switch]$GRSInfo
     )
 
     Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for [AppWorkload*.log]"
@@ -97,6 +97,7 @@ function Get-AppWorkloadPoliciesTest {
                         # Decode Base64
                         $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
                         
+                        # Extract PMPC Variables
                         if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
                             $DetectionObject = [PSCustomObject]@{
                                 AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
@@ -106,13 +107,13 @@ function Get-AppWorkloadPoliciesTest {
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionObject
                         }
                         else {
-                            # Add to PSCustomObject
+                            # Add full script to PSCustomObject
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionScriptValue
                         }
 
                         # Check Script Signature Signer
                         if ($DetectionScriptValue -match '# SIG # Begin signature block') {
-                            # Convert the detection script string to byte array for Get-AuthenticodeSignature
+                            # Convert the detection script string to byte array for Get-AuthenticodeSignature, then parse out the Signer (CN=...)
                             $DetectionScriptSigner = ((Get-AuthenticodeSignature -Content $([System.Text.Encoding]::UTF8.GetBytes($DetectionScriptValue)) -SourcePathOrExtension ".ps1" | Select-Object *).SignerCertificate.Subject -split ',')[0]
                             # Add to PSCustomObject
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Signer' -Value ($DetectionScriptSigner)
@@ -170,58 +171,52 @@ function Get-AppWorkloadPoliciesTest {
 
                 # Get GRS Info
                 if ($GRSInfo) {
-                    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for GRS Info for App ID [$($_.Id)]"
+                    # Store Current App ID
+                    $CurrentAppID = $_.Id
+
                     # GRS Line Pattern
                     [string]$grsPattern = '<!\[LOG\[\[Win32App\]\[GRSManager\].*'
 
-                    # Search for GRS Info (Latest)
+                    # Search for GRS Info
                     $GRSInfoMatches = Select-String -Path "$($Path)" -Pattern $grsPattern
-                    #$GRSInfoMatches = [regex]::Matches($(Get-Content $File -Raw), $grsPattern)
-                    #$GRSInfoMatches = [regex]::Matches($(Get-Content $Path -Raw), $grsPattern)
-
-                    # ... sanitize the entries to remove the prefix and filter by win32AppID...
-                    $sanitizedEntries = @()
-                    foreach ($GRSMatch in $GRSInfoMatches) {
-                        # GRS Sanitize Line Pattern
-                        [string]$grsSanitizePattern = '<!\[LOG\[\[Win32App\]\[GRSManager\]. '
-
-                        $entry = $GRSMatch -replace $grsSanitizePattern, ''
-                        #Write-Host -ForegroundColor DarkGray "GRS Entry: $entry"
-                        if ($entry -like "*$($_.Id)*") {
-                            $sanitizedEntries += $entry
-                        }
-                    }
 
                     # GRS App ID Pattern
                     [string]$grsAppIdPattern = 'Found GRS value: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}) at key (.+)'
 
-                    $latestEntry = $sanitizedEntries |
-                    Where-Object { $_ -match $grsAppIdPattern } |
-                    Sort-Object { [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null) } -Descending |
-                    Select-Object -First 1
-                    Write-Host "Latest:"
-                    $latestEntry
-                    Write-Host "End"
+                    # Find all the entries with the AppID and the GRS Pattern
+                    $GRSInfoMatches = $GRSInfoMatches | Where-Object { $_ -match "$($CurrentAppID)" } | Where-Object { $_ -match $grsAppIdPattern }
 
-                    if ($latestEntry -match $grsAppIdPattern) {
-                        Write-Host "Found Latest GRS"
-                        $lastInstallAttempt = [datetime]::ParseExact($matches[1], "MM/dd/yyyy HH:mm:ss", $null)
-                        Write-Host "Last Install Attempt: $lastInstallAttempt"
-                        $rawRegistryKey = $matches[2]
-                        Write-Host "Raw Registry Key: $rawRegistryKey"
-                        $formattedRegistryKey = $rawRegistryKey -replace "=.*", "="
-                        Write-Host "Formatted Registry Key: $formattedRegistryKey"
+                    # Build a Sortable List to find the latest entry
+                    [Collections.Generic.List[PSCustomObject]]$EntryObjects = @()
+                    foreach ($Entry in $GRSInfoMatches) {
+                        # Build a custom object with the info
+                        $GRSInfoObject = [PSCustomObject]@{
+                            'DateTime' = ([regex]::Matches($Entry, '(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})')).Value
+                            'LineData' = $Entry
+                        }
+                        # Add to List
+                        $EntryObjects.Add($GRSInfoObject)
+                    }
+
+                    # Get the latest entry by DateTime
+                    $LatestEntry = $EntryObjects | Sort-Object DateTime | Select-Object -Last 1
+
+                    if ($LatestEntry) {
+                        # Get RegistryKey and Ensure we are matching on the LatestEntry LineData 
+                        $formattedRegistryKey = (($LatestEntry.LineData.ToString() | Select-String -Pattern $grsAppIdPattern).Matches.Groups[2].Value) -replace '=.*', '='
                         $registryKeyToDelete = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\$formattedRegistryKey"
-                        Write-Host "Registry Key to Delete: $registryKeyToDelete"
 
                         $GRSInformation = $null
                         $GRSInformation = [PSCustomObject]@{
-                            'Last Install Attempt (UTC)' = $lastInstallAttempt
-                            'RegKeyToDelete'             = $registryKeyToDelete
+                            'GRS Last Attempt' = $LatestEntry.DateTime
+                            'GRS RegKey'       = $registryKeyToDelete
                         }
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value $($GRSInformation.'Last Install Attempt (UTC)')
+                        # Add to PSCustomObject
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Last Attempt' -Value $($GRSInformation.'GRS Last Attempt')
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS RegKey' -Value $($GRSInformation.'GRS RegKey')
                     } else {
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Info' -Value "N/A"
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Last Attempt' -Value "N/A"
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS RegKey' -Value "N/A"
                     }
 
                 }

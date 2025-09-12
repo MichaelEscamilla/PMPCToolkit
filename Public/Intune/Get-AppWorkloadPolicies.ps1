@@ -3,14 +3,16 @@
         Stolen From: https://www.deploymentresearch.com/read-cmlogs-with-powershell-and-hello-world/
 #>
 
-function Get-AppWorkloadPolicies {
+function Get-AppWorkloadPoliciesTest {
     [CmdletBinding()]
     param (
         [string]
         [string]$Path = "$(Get-Location)\AppWorkload*.log",
         [switch]$Latest,
+        [switch]$UninstallCommand,
         [switch]$DetectionScript,
-        [switch]$RequirementScript
+        [switch]$RequirementScript,
+        [switch]$GRSInfo
     )
 
     Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Searching for [AppWorkload*.log]"
@@ -50,37 +52,39 @@ function Get-AppWorkloadPolicies {
             $Policy | ForEach-Object {
                 # Build a PSCustomObject
                 $CusObj = [PSCustomObject] @{
-                    'Policy Date' = $PolicyDate.DateTime
-                    'App Id'      = $_.Id
-                    'App Name'    = $_.Name
-                    Revision      = $_.Version
-                    Intent        = switch ($_.Intent) {
+                    'Policy Date'      = $PolicyDate.DateTime
+                    'App Id'           = $_.Id
+                    'App Name'         = $_.Name
+                    Revision           = $_.Version
+                    Intent             = switch ($_.Intent) {
                         0 { 'Not Targeted' }
                         1 { 'Available' }
                         3 { 'Required' }
                         4 { 'Uninstall' }
                         Default { $_.Intent }
                     }
-                    Context       = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
+                    Context            = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
                         0 { 'USER' }
                         1 { 'SYSTEM' }
                         Default { $InstallEx.RunAs }
                     }
-                    TimeFormat    = $_.StartDeadlineEx.TimeFormat
-                    StartTime     = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
-                    Deadline      = if ($_.StartDeadlineEx.Deadline -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.Deadline }
-                    DO            = switch ($_.DOPriority) {
+                    TimeFormat         = $_.StartDeadlineEx.TimeFormat
+                    StartTime          = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
+                    Deadline           = if ($_.StartDeadlineEx.Deadline -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.Deadline }
+                    DO                 = switch ($_.DOPriority) {
                         0 { 'Background' }
                         1 { 'Foreground' }
                         Default { $_.DOPriority }
                     }
-                    Notifications = switch ($_.AvailableAppEnforcement) {
+                    Notifications      = switch ($_.AvailableAppEnforcement) {
                         0 { 'Show All' }
                         1 { 'On Restart' }
                         2 { '2' }
                         3 { 'Hide All' }
                         Default { $_.NotificationPriority }
                     }
+                    InstallCommandLine = $_.InstallCommandLine
+                    UninstallCommandLine = $_.UninstallCommandLine
                 }
 
                 # Add Detection Script to PSCustomObject
@@ -92,18 +96,24 @@ function Get-AppWorkloadPolicies {
                         $DetectionScriptValue = (ConvertFrom-Json ($DetectionScriptValue.DetectionText) | Select-Object -ExpandProperty ScriptBody -ErrorAction SilentlyContinue)
                         # Decode Base64
                         $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
-
-                        $DetectionObject = [PSCustomObject]@{
-                            AppName = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
-                            AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
+                        
+                        # Extract PMPC Variables
+                        if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            $DetectionObject = [PSCustomObject]@{
+                                AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
+                                AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
+                            }
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionObject
                         }
-
-                        # Add to PSCustomObject
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionObject
+                        else {
+                            # Add full script to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Script' -Value $DetectionScriptValue
+                        }
 
                         # Check Script Signature Signer
                         if ($DetectionScriptValue -match '# SIG # Begin signature block') {
-                            # Convert the detection script string to byte array for Get-AuthenticodeSignature
+                            # Convert the detection script string to byte array for Get-AuthenticodeSignature, then parse out the Signer (CN=...)
                             $DetectionScriptSigner = ((Get-AuthenticodeSignature -Content $([System.Text.Encoding]::UTF8.GetBytes($DetectionScriptValue)) -SourcePathOrExtension ".ps1" | Select-Object *).SignerCertificate.Subject -split ',')[0]
                             # Add to PSCustomObject
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'Detection Signer' -Value ($DetectionScriptSigner)
@@ -128,8 +138,19 @@ function Get-AppWorkloadPolicies {
                         # Decode Base64
                         $RequirementScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($RequirementScriptValue))
 
-                        # Add to PSCustomObject
-                        $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value ($RequirementScriptValue)
+                        if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            $RequirementObject = [PSCustomObject]@{
+                                AppName    = $(Get-PowerShellVariables -ScriptContent $RequirementScriptValue -VariableName "z")
+                                AppVersion = $(Get-PowerShellVariables -ScriptContent $RequirementScriptValue -VariableName "d")
+                            }
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementObject
+                            #$CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementScriptValue
+                        }
+                        else {
+                            # Add to PSCustomObject
+                            $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value $RequirementScriptValue
+                        }
 
                         # Check Script Signature Signer
                         if ($RequirementScriptValue -match '# SIG # Begin signature block') {
@@ -146,6 +167,58 @@ function Get-AppWorkloadPolicies {
                         $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Script' -Value 'Not a Script'
                         $CusObj | Add-Member -MemberType NoteProperty -Name 'Requirement Signer' -Value 'N/A'
                     }
+                }
+
+                # Get GRS Info
+                if ($GRSInfo) {
+                    # Store Current App ID
+                    $CurrentAppID = $_.Id
+
+                    # GRS Line Pattern
+                    [string]$grsPattern = '<!\[LOG\[\[Win32App\]\[GRSManager\].*'
+
+                    # Search for GRS Info
+                    $GRSInfoMatches = Select-String -Path "$($Path)" -Pattern $grsPattern
+
+                    # GRS App ID Pattern
+                    [string]$grsAppIdPattern = 'Found GRS value: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}) at key (.+)'
+
+                    # Find all the entries with the AppID and the GRS Pattern
+                    $GRSInfoMatches = $GRSInfoMatches | Where-Object { $_ -match "$($CurrentAppID)" } | Where-Object { $_ -match $grsAppIdPattern }
+
+                    # Build a Sortable List to find the latest entry
+                    [Collections.Generic.List[PSCustomObject]]$EntryObjects = @()
+                    foreach ($Entry in $GRSInfoMatches) {
+                        # Build a custom object with the info
+                        $GRSInfoObject = [PSCustomObject]@{
+                            'DateTime' = ([regex]::Matches($Entry, '(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})')).Value
+                            'LineData' = $Entry
+                        }
+                        # Add to List
+                        $EntryObjects.Add($GRSInfoObject)
+                    }
+
+                    # Get the latest entry by DateTime
+                    $LatestEntry = $EntryObjects | Sort-Object DateTime | Select-Object -Last 1
+
+                    if ($LatestEntry) {
+                        # Get RegistryKey and Ensure we are matching on the LatestEntry LineData 
+                        $formattedRegistryKey = (($LatestEntry.LineData.ToString() | Select-String -Pattern $grsAppIdPattern).Matches.Groups[2].Value) -replace '=.*', '='
+                        $registryKeyToDelete = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\$formattedRegistryKey"
+
+                        $GRSInformation = $null
+                        $GRSInformation = [PSCustomObject]@{
+                            'GRS Last Attempt' = $LatestEntry.DateTime
+                            'GRS RegKey'       = $registryKeyToDelete
+                        }
+                        # Add to PSCustomObject
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Last Attempt' -Value $($GRSInformation.'GRS Last Attempt')
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS RegKey' -Value $($GRSInformation.'GRS RegKey')
+                    } else {
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Last Attempt' -Value "N/A"
+                        $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS RegKey' -Value "N/A"
+                    }
+
                 }
 
                 # Add PSCustomObject to List
