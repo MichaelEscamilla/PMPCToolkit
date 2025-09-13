@@ -14,11 +14,11 @@ function Get-RunAs32On64 {
 
     # Get Cache Folder
     $SupportedProductsFolder = Get-SupportedProductsCachePath
-    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Supported Products Cache Folder: [$SupportedProductsFolder]"
+    Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Supported Products Cache Folder: [$SupportedProductsFolder]"
 
     # Import the Supported Products XML
     $SupportedProductsXml = [xml](Get-Content -Path $SupportedProductsFolder\SupportedProducts.xml)
-    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Successfully imported the supported products XML file"
+    Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Successfully imported the supported products XML file"
 
     # Get All Products with the 'RunAs32On64' node
     $Products = $SupportedProductsXml.SelectNodes("//RunAs32On64")

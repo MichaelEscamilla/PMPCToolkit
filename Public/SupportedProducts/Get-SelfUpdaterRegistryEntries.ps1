@@ -7,11 +7,11 @@ function Get-SelfUpdaterRegistryEntries {
 
     # Get Cache Folder
     $SupportedProductsFolder = Get-SupportedProductsCachePath
-    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Supported Products Cache Folder: [$SupportedProductsFolder]"
+    Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Supported Products Cache Folder: [$SupportedProductsFolder]"
 
     # Import the Supported Products XML
     $SupportedProductsXml = [xml](Get-Content -Path $SupportedProductsFolder\SupportedProducts.xml)
-    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Successfully imported the supported products XML file"
+    Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Successfully imported the supported products XML file"
 
     # Get All Products with the 'Self-Updater' node
     $Products = $SupportedProductsXml.SelectNodes("//Self-Updater")

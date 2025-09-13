@@ -12,7 +12,7 @@ function Invoke-PublisherSettingsBackupExtract {
         $BackupPath = "$(Get-Location)"
     )
 
-    Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Backup Path: [$BackupPath]"
+    Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Backup Path: [$BackupPath]"
 
     # Restore Folder Name
     $RestoreFolderName = "SettingsBackup-Restored"
@@ -40,7 +40,7 @@ function Invoke-PublisherSettingsBackupExtract {
         New-Item -Path $RestorePath -ItemType Directory
 
         # Extract the contents of the .cab file to the folder
-        Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Extracting $($File.Name) to $($RestorePath)"
+        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Extracting $($File.Name) to $($RestorePath)"
 
         Start-Process -FilePath "C:\Windows\System32\expand.exe" -ArgumentList "-R -I -F:* `"$($File.FullName)`" `"$RestorePath`"" -WindowStyle Hidden
     }

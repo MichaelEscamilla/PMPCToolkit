@@ -21,9 +21,9 @@ function Update-SupportedProducts {
     # Download the Supported Products XML
     try {
         $SupportedProductsXmlRaw = Invoke-WebRequest -Uri $SupportedProductsUrl -UseBasicParsing
-        Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Successfully downloaded the supported products XML file from [$SupportedProductsUrl]"
+        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Successfully downloaded the supported products XML file from [$SupportedProductsUrl]"
         $SupportedProductsXmlRaw.Content | Out-File -FilePath $SupportedProductsFileFullName -Encoding utf8 -Force
-        Write-Host -ForegroundColor DarkGray "[$((Get-Date).ToString('HH:mm:ss'))] Successfully saved the supported products XML file to [$SupportedProductsFileFullName]"
+        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Successfully saved the supported products XML file to [$SupportedProductsFileFullName]"
     }
     catch {
         Write-Host "Failed to download the supported products XML file from $SupportedProductsUrl"
