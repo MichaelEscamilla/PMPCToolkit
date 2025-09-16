@@ -1,12 +1,11 @@
 <#
-    .DESCRIPTION
-        Stolen From: https://www.deploymentresearch.com/read-cmlogs-with-powershell-and-hello-world/
+    .SYNOPSIS
+    Parses Intune AppWorkload log files to extract information about Win32 App policies, GRS (Global Retry Schedule) details, or ESP (Enrollment Status Page) profile data.
 #>
 
 function Get-AppWorkloadPolicies {
     [CmdletBinding()]
     param (
-        [string]
         [string]$Path = "$(Get-Location)\AppWorkload*.log",
         [switch]$Latest,
         [switch]$UninstallCommand,
@@ -211,7 +210,7 @@ function Get-AppWorkloadPolicies {
                             $GRSInformation = $null
                             $GRSInformation = [PSCustomObject]@{
                                 'GRS Last Attempt (UTC)' = $LatestEntry.DateTime
-                                'GRS RegKey'       = $registryKeyToDelete
+                                'GRS RegKey'             = $registryKeyToDelete
                             }
                             # Add to PSCustomObject
                             $CusObj | Add-Member -MemberType NoteProperty -Name 'GRS Last Attempt (UTC)' -Value $($GRSInformation.'GRS Last Attempt (UTC)')
