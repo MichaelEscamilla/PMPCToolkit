@@ -45,7 +45,7 @@ function Get-AppWorkloadPoliciesTest {
 
                 # Parse the Line for the Date
                 $PolicyDate = Read-CMTraceLogLine -LineContent "$($Match.Line)"
-                Write-Host "Policy DateTime: $($PolicyDate.DateTime)"
+
                 # Convert the String from JSON
                 $Policy = $null
                 $Policy = $PolicyJson | ConvertFrom-Json -ErrorAction Stop
