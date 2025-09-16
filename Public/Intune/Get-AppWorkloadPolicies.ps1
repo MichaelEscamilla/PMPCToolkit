@@ -45,7 +45,7 @@ function Get-AppWorkloadPolicies {
 
                 # Parse the Line for the Date
                 $PolicyDate = Read-CMTraceLogLine -LineContent "$($Match.Line)"
-
+                Write-Host "Policy DateTime: $($PolicyDate.DateTime)"
                 # Convert the String from JSON
                 $Policy = $null
                 $Policy = $PolicyJson | ConvertFrom-Json -ErrorAction Stop
@@ -64,10 +64,10 @@ function Get-AppWorkloadPolicies {
                             4 { 'Uninstall' }
                             Default { $_.Intent }
                         }
-                        Context              = switch ((ConvertFrom-Json $_.InstallEx).RunAs) {
+                        Context              = switch (($_.InstallEx | ConvertFrom-Json -ErrorAction SilentlyContinue).RunAs) {
                             0 { 'USER' }
                             1 { 'SYSTEM' }
-                            Default { $InstallEx.RunAs }
+                            Default { ($_.InstallEx | ConvertFrom-Json -ErrorAction SilentlyContinue).RunAs }
                         }
                         TimeFormat           = $_.StartDeadlineEx.TimeFormat
                         StartTime            = if ($_.StartDeadlineEx.StartTime -eq '1/1/0001 12:00:00 AM') { 'ASAP' } else { $_.StartDeadlineEx.StartTime }
