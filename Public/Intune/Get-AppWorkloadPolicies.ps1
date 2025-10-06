@@ -64,6 +64,16 @@ function Get-AppWorkloadPolicies {
                             4 { 'Uninstall' }
                             Default { $_.Intent }
                         }
+                        'Avail Status'       = if ($_.Intent -eq 1) {
+                            switch ($_.AvailableAppEnforcement) {
+                                0 { 'Not Installed' }
+                                1 { 'Installed' }
+                                Default { $_.AvailableAppEnforcement }
+                            }
+                        }
+                        else {
+                            'N/A'
+                        }
                         Context              = switch (($_.InstallEx | ConvertFrom-Json -ErrorAction SilentlyContinue).RunAs) {
                             0 { 'USER' }
                             1 { 'SYSTEM' }
@@ -77,7 +87,7 @@ function Get-AppWorkloadPolicies {
                             1 { 'Foreground' }
                             Default { $_.DOPriority }
                         }
-                        Notifications        = switch ($_.AvailableAppEnforcement) {
+                        Notifications        = switch ($_.ToastState) {
                             0 { 'Show All' }
                             1 { 'On Restart' }
                             2 { '2' }
