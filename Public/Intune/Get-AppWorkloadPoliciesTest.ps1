@@ -10,6 +10,7 @@ function Get-AppWorkloadPoliciesTest {
         [switch]$Latest,
         [switch]$UninstallCommand,
         [switch]$DetectionScript,
+        [switch]$DetectionScriptFull,
         [switch]$RequirementScript,
         [switch]$GRSInfo,
         [switch]$ESPInfo
@@ -99,7 +100,7 @@ function Get-AppWorkloadPoliciesTest {
                             $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
                         
                             # Extract PMPC Variables
-                            if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            if (($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') -and (!$DetectionScriptFull)) {
                                 $DetectionObject = [PSCustomObject]@{
                                     AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
                                     AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
