@@ -1,6 +1,10 @@
 <#
     .SYNOPSIS
     Parses Intune AppWorkload log files to extract information about Win32 App policies, GRS (Global Retry Schedule) details, or ESP (Enrollment Status Page) profile data.
+
+    .DESCRIPTION
+    This function searches for log files matching the pattern "AppWorkload*.log" in a specified directory (defaulting to the current location).
+    It extracts policy information for Win32 Apps, including details about installation intent, deadlines, detection scripts, requirement scripts, GRS installation dates, and ESP installation information.
 #>
 
 function Get-AppWorkloadPolicies {
@@ -10,6 +14,7 @@ function Get-AppWorkloadPolicies {
         [switch]$Latest,
         [switch]$UninstallCommand,
         [switch]$DetectionScript,
+        [switch]$DetectionScriptFull,
         [switch]$RequirementScript,
         [switch]$GRSInfo,
         [switch]$ESPInfo
@@ -109,7 +114,7 @@ function Get-AppWorkloadPolicies {
                             $DetectionScriptValue = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DetectionScriptValue))
                         
                             # Extract PMPC Variables
-                            if ($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') {
+                            if (($_.InstallCommandLine -match 'PatchMyPC-ScriptRunner') -and (!$DetectionScriptFull)) {
                                 $DetectionObject = [PSCustomObject]@{
                                     AppName    = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "z")
                                     AppVersion = $(Get-PowerShellVariables -ScriptContent $DetectionScriptValue -VariableName "d")
