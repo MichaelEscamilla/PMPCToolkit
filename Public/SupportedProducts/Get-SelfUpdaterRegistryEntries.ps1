@@ -6,10 +6,10 @@ function Get-SelfUpdaterRegistryEntries {
     )
 
     # Get the Latest SupportedProducts.xml
-    Update-SupportedProducts
+    Get-SupportedProducts
 
     # Get Cache Folder
-    $SupportedProductsFolder = Get-SupportedProductsCachePath
+    $SupportedProductsFolder = Get-SupportedProductsPath
     Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Supported Products Cache Folder: [$SupportedProductsFolder]"
 
     # Import the Supported Products XML

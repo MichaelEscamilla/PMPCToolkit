@@ -3,7 +3,7 @@ function Get-SupportedProducts {
     param (
         [Parameter(Mandatory = $false)]
         [string]
-        $FilePath = "$(Get-SupportedProductsCachePath)"
+        $Destination = "$(Get-SupportedProductsPath)"
     )
 
     # Define Supported Products Url
@@ -12,10 +12,38 @@ function Get-SupportedProducts {
     # Define Supported Products File Name
     $SupportedProductsFile = "SupportedProducts.xml"
 
-    # Cache Folder
-    $SupportedProductsFolder = "$($FilePath)"
-    if (-not(Test-Path $SupportedProductsFolder)) {
-        $null = New-Item -Path $SupportedProductsFolder -ItemType Directory -Force
+    # Define Destination Folder if the parameter was provided
+    if ($PSBoundParameters.ContainsKey("Destination")) {
+        $SupportedProductsFolder = Join-Path -Path "$($Destination)" -ChildPath "SupportedProducts"
+    }
+    else {
+        $SupportedProductsFolder = "$(Get-SupportedProductsPath)"
+    }
+
+    # Delete Existing $SupportedProductsFolder
+    Remove-Item -Path "$($SupportedProductsFolder)" -Recurse -Force -ErrorAction SilentlyContinue
+
+    # Create $SupportedProductsFolder
+    try {
+        # Create the Destination
+        $null = New-Item -Path $SupportedProductsFolder -ItemType Directory -Force -ErrorAction Stop
+    }
+    catch {
+        Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Failed to create folder: [$SupportedProductsFolder]"
+        $SupportedProductsFolder = "$(Get-SupportedProductsPath)"
+        Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Using default folder: [$SupportedProductsFolder]"
+
+        # Delete Existing $SupportedProductsFolder
+        Remove-Item -Path "$($SupportedProductsFolder)" -Recurse -Force -ErrorAction SilentlyContinue
+        
+        try {
+            # Create the Destination
+            $null = New-Item -Path $SupportedProductsFolder -ItemType Directory -Force -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Failed to create folder: [$SupportedProductsFolder]"
+            return
+        }
     }
 
     # Define Supported Products File FullName
@@ -39,22 +67,6 @@ function Get-SupportedProducts {
         $SupportedProductsXmlRaw.Content | Out-File -FilePath "$($SupportedProductsFileFullName)" -Encoding utf8 -Force
         Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully saved: [$SupportedProductsFileFullName]"
     }
-    catch [System.UnauthorizedAccessException] {
-        Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Failed to save: [$SupportedProductsFileFullName] due to insufficient permissions."
-        # Change to the default path and try saving again
-        $SupportedProductsFolder = "$(Get-SupportedProductsCachePath)"
-        $SupportedProductsFileFullName = Join-Path $SupportedProductsFolder $SupportedProductsFile
-        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Saving: [$SupportedProductsFileFullName]"
-        try {
-            $SupportedProductsXmlRaw.Content | Out-File -FilePath "$($SupportedProductsFileFullName)" -Encoding utf8 -Force
-            Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully saved: [$SupportedProductsFileFullName]"
-        }
-        catch {
-            Write-Host "Failed to save the supported products XML file to the default path: $SupportedProductsFileFullName"
-            Write-Error "$($_.Exception.Message)"
-            return
-        }
-    }
     catch {
         Write-Host "Failed to save the supported products XML file to $SupportedProductsFileFullName"
         Write-Error "$($_.Exception.Message)"
@@ -69,7 +81,7 @@ function Get-SupportedProducts {
     }
     catch {
         Write-Host "Failed to open the folder containing the supported products XML file at $SupportedProductsFolder"
-        $_
+        Write-Error "$($_.Exception.Message)"
         return
     }
 }
