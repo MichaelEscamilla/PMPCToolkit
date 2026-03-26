@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.11'
+    ModuleVersion        = '0.0.12'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -29,9 +29,11 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @(
         'Get-RunAs32On64'
-        'Update-SupportedProducts'
+        'Get-SupportedProducts'
+        'Get-LatestCatalog'
         'Invoke-PublisherSettingsBackupExtract'
         'Get-HashFromDigest'
+        'Get-StringFromBase64'
         'Get-AppWorkloadPolicies'
         'Get-SelfUpdaterRegistryEntries'
     )

@@ -1,4 +1,4 @@
-function Get-SupportedProductsCachePath {
+function Get-SupportedProductsPath {
     [CmdletBinding()]
     param ()
 

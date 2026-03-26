@@ -13,10 +13,10 @@ function Get-RunAs32On64 {
     )
 
     # Get the Latest SupportedProducts.xml
-    Update-SupportedProducts
+    Get-SupportedProducts
 
     # Get Cache Folder
-    $SupportedProductsFolder = Get-SupportedProductsCachePath
+    $SupportedProductsFolder = Get-SupportedProductsPath
     Write-Verbose -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Supported Products Cache Folder: [$SupportedProductsFolder]"
 
     # Import the Supported Products XML
