@@ -22,3 +22,4 @@ if ($FoundErrors.Count -gt 0) {
 }
 
 Export-ModuleMember -Function '*' -Alias '*' -Cmdlet '*'
+Initialize-Module -VariableName "PMPCToolkitModule"

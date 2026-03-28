@@ -1,0 +1,15 @@
+{
+    "Module": {
+        "DefaultCachePath": "$env:TEMP",
+        "DefaultCacheFolderName": "PMPCToolkit"
+    },
+    "Catalog": {
+        "DefaultCacheFolderName": "LatestCatalog",
+        "CatalogCABFileName": "Catalog.cab",
+        "CatalogXMLFileName": "PatchMyPC.xml"
+    },
+    "SupportProducts": {
+        "DefaultCacheFolderName": "SupportedProducts",
+        "SupportProductsXMLFileName": "SupportedProducts.xml"
+    }
+}
