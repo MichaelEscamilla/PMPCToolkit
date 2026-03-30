@@ -36,7 +36,8 @@
         'Get-StringFromBase64'
         'Get-AppWorkloadPolicies'
         'Get-SelfUpdaterRegistryEntries'
-        'Get-PrePostScripts'
+        'Get-BackupsPrePostScripts'
+        'Get-SPPrePostScripts'
     )
 
     PrivateData          = @{

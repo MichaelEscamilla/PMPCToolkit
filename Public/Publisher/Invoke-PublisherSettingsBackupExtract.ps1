@@ -43,7 +43,7 @@ function Invoke-PublisherSettingsBackupExtract {
     # Delete the $RestoreFolderName folder if it exists
     Remove-Item -Path "$($RestoreFolderPath)" -Recurse -Force -ErrorAction SilentlyContinue
 
-    # Create $SupportedProductsFolder
+    # Create $RestoreFolderPath
     try {
         # Create the Destination
         $null = New-Item -Path $RestoreFolderPath -ItemType Directory -Force -ErrorAction Stop
