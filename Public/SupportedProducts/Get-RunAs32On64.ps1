@@ -13,7 +13,7 @@ function Get-RunAs32On64 {
     )
 
     # Get the Latest SupportedProducts.xml
-    Get-SupportedProducts
+    Get-SupportedProducts -NoExplorer
 
     # Get Cache Folder
     $SupportedProductsFolder = Get-SupportedProductsPath

@@ -3,8 +3,17 @@ function Get-SupportedProducts {
     param (
         [Parameter(Mandatory = $false)]
         [string]
-        $Destination = "$(Get-SupportedProductsPath)"
+        #$Destination = "$(Get-SupportedProductsPath)",
+        $Destination,
+
+        [Parameter(Mandatory = $false)]
+        [switch]
+        $NoExplorer
     )
+
+    # Default Destination Path
+    $DestinationDefault = Join-Path -Path "$($PMPCToolkitModule.Module.DefaultCachePath)" -ChildPath "$($PMPCToolkitModule.Module.DefaultCacheFolderName)"
+    $DestinationDefault = Join-Path -Path $DestinationDefault -ChildPath "$($PMPCToolkitModule.SupportProducts.DefaultCacheFolderName)"
 
     # Define Supported Products Url
     $SupportedProductsUrl = "https://api.patchmypc.com/downloads/xml/supportedproducts.xml"
@@ -14,10 +23,11 @@ function Get-SupportedProducts {
 
     # Define Destination Folder if the parameter was provided
     if ($PSBoundParameters.ContainsKey("Destination")) {
-        $SupportedProductsFolder = Join-Path -Path "$($Destination)" -ChildPath "SupportedProducts"
+        $SupportedProductsFolder = Join-Path -Path "$($Destination)" -ChildPath "$($PMPCToolkitModule.SupportProducts.DefaultCacheFolderName)"
     }
     else {
-        $SupportedProductsFolder = "$(Get-SupportedProductsPath)"
+        #$SupportedProductsFolder = "$(Get-SupportedProductsPath)"
+        $SupportedProductsFolder = "$($DestinationDefault)"
     }
 
     # Delete Existing $SupportedProductsFolder
@@ -30,7 +40,7 @@ function Get-SupportedProducts {
     }
     catch {
         Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Failed to create folder: [$SupportedProductsFolder]"
-        $SupportedProductsFolder = "$(Get-SupportedProductsPath)"
+        $SupportedProductsFolder = "$($DestinationDefault)"
         Write-Warning "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Using default folder: [$SupportedProductsFolder]"
 
         # Delete Existing $SupportedProductsFolder
@@ -74,14 +84,16 @@ function Get-SupportedProducts {
     }
 
     # Open the folder containing the Supported Products XML file
-    try {
-        Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Opening: [$SupportedProductsFolder]"
-        Start-Process -FilePath "explorer.exe" -ArgumentList "$($SupportedProductsFolder)" -Wait
-        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully opened:[$SupportedProductsFolder]"
-    }
-    catch {
-        Write-Host "Failed to open the folder containing the supported products XML file at $SupportedProductsFolder"
-        Write-Error "$($_.Exception.Message)"
-        return
+    if (-not $NoExplorer) {
+        try {
+            Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Opening: [$SupportedProductsFolder]"
+            Start-Process -FilePath "explorer.exe" -ArgumentList "$($SupportedProductsFolder)" -Wait
+            Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully opened:[$SupportedProductsFolder]"
+        }
+        catch {
+            Write-Host "Failed to open the folder containing the supported products XML file at $SupportedProductsFolder"
+            Write-Error "$($_.Exception.Message)"
+            return
+        }
     }
 }
