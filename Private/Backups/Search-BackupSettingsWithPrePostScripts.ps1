@@ -1,4 +1,4 @@
-function Get-SettingsWithPrePostScritps {
+function Search-BackupSettingsWithPrePostScripts {
     param ([Parameter(Mandatory = $false)]
         [string]
         $SettingsFilePath

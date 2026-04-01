@@ -1,4 +1,4 @@
-function Get-BackupsPrePostScripts {
+function Get-PMPCBackupSettingsPrePostScripts {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
@@ -11,7 +11,7 @@ function Get-BackupsPrePostScripts {
         # The Folder in the backup location where the restored CAB files will be saved.
         $BackupFolderName = "SettingsBackup-Restored"
     )
-
+<#
     # Restore Folder Path
     $RestoreFolderPath = Join-Path -Path "$($BackupFilesPath)" -ChildPath "$($BackupFolderName)"
     Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Restore Folder Path: [$RestoreFolderPath]"
@@ -28,12 +28,21 @@ function Get-BackupsPrePostScripts {
             Name     = $Folder.Name
             FullName = $Folder.FullName
             Items    = @(
-                Get-SettingsWithPrePostScritps -SettingsFilePath $($Folder.FullName + "\Settings.xml")
+                Search-BackupSettingsWithPrePostScripts -SettingsFilePath $($Folder.FullName + "\Settings.xml")
             )
         }
         # Add the object to the $RestoreFoldersObject array
         $RestoreFoldersObject += $FolderInfo
     }
+#>
+    # Get Backup Restored Folders
+    $BackupRestoredFoldersObject = Get-BackupRestoredFolders -BackupFilesPath $BackupFilesPath -BackupFolderName $BackupFolderName
+
+    # Add the Pre/Post Script Search Results to the Backup Restored Folders Object
+    foreach ($FolderInfo in $BackupRestoredFoldersObject) {
+        $PrePostScriptResults = Search-BackupSettingsWithPrePostScripts -SettingsFilePath (Join-Path -Path $FolderInfo.FullName -ChildPath "Settings.xml")
+        $FolderInfo | Add-Member -MemberType NoteProperty -Name "Items" -Value $PrePostScriptResults
+    }
     
-    & "$($MyInvocation.MyCommand.Module.ModuleBase)\GUI\PrePostScript\PrePostScriptUI.ps1" -TreeViewItems $RestoreFoldersObject
+    & "$($MyInvocation.MyCommand.Module.ModuleBase)\GUI\Backups\SearchBackupSettingswithPrePostScriptUI.ps1" -TreeViewItems $BackupRestoredFoldersObject
 }

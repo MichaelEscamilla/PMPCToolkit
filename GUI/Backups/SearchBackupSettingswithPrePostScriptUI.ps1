@@ -120,7 +120,7 @@ Add-Type -AssemblyName WindowsBase
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
             <TabControl Grid.Row="0" Name="MainTabs">
-                <TabItem Header="PMPC">
+                <TabItem Name="TabPMPC" Header="PMPC">
                 <Grid Margin="6">
                     <!-- Scripts group -->
                     <GroupBox Grid.Row="0" Padding="8,10,8,8">
@@ -261,7 +261,7 @@ Add-Type -AssemblyName WindowsBase
 
                 </Grid>
                 </TabItem>
-                <TabItem Header="Install">
+                <TabItem Name="TabInstall" Header="Install">
                 <Grid Margin="6">
                     <!-- Scripts group -->
                     <GroupBox Grid.Row="0" Padding="8,10,8,8">
@@ -403,7 +403,7 @@ Add-Type -AssemblyName WindowsBase
                 </Grid>
                 </TabItem>
 
-                <TabItem Header="Uninstall">
+                <TabItem Name="TabUninstall" Header="Uninstall">
                 <Grid Margin="6">
                     <!-- Scripts group -->
                     <GroupBox Grid.Row="0" Padding="8,10,8,8">
@@ -606,11 +606,8 @@ Add-Type -AssemblyName WindowsBase
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="108"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="108"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="1" Name="BtnOK" Content="OK" Height="24"/>
-                <Button Grid.Column="3" Name="BtnCancel" Content="Cancel" Height="24" IsEnabled="False"/>
+                <Button Grid.Column="1" Name="BtnOK" Content="Close" Height="24"/>
             </Grid>
         </Grid>
     </Border>
@@ -676,6 +673,94 @@ function Update-TreeView {
     $TreeViewItem_Parent.IsExpanded = $true
 }
 
+function ConvertTo-BackupComparisonState {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]
+        $Items
+    )
+
+    return ConvertTo-Json -InputObject @($Items) -Depth 10 -Compress
+}
+
+function Get-BackupChangeInfo {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]
+        $CurrentItems,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object[]]
+        $PreviousItems
+    )
+
+    if (-not $PreviousItems) {
+        return [PSCustomObject]@{
+            HasChanges    = $false
+            AddedCount    = 0
+            RemovedCount  = 0
+            ModifiedCount = 0
+            Summary       = 'Baseline backup'
+        }
+    }
+
+    $currentState = ConvertTo-BackupComparisonState -Items $CurrentItems
+    $previousState = ConvertTo-BackupComparisonState -Items $PreviousItems
+
+    $hasChanges = ($previousState -ne $currentState)
+
+    return [PSCustomObject]@{
+        HasChanges = $hasChanges
+        Summary    = if ($hasChanges) { 'Changes detected' } else { 'No changes' }
+    }
+}
+
+function Set-BackupTreeNodeHighlight {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        $TreeViewItem,
+
+        [Parameter(Mandatory = $true)]
+        $FolderData,
+
+        [Parameter(Mandatory = $true)]
+        $ChangeInfo,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]
+        $PreviousBackupName
+    )
+
+    $tooltipLines = @(
+        [string]$FolderData.FullName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PreviousBackupName)) {
+        $tooltipLines += 'Baseline backup'
+    }
+    else {
+        $tooltipLines += "Compared to: $PreviousBackupName"
+        $tooltipLines += "Changes: $($ChangeInfo.Summary)"
+    }
+
+    $TreeViewItem.ToolTip = $tooltipLines -join [Environment]::NewLine
+
+    if (-not $ChangeInfo.HasChanges) {
+        return
+    }
+
+    $TreeViewItem.Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
+    #$TreeViewItem.Foreground = [System.Windows.Media.Brushes]::DarkSlateGray
+    #$TreeViewItem.FontWeight = [System.Windows.FontWeights]::Bold
+}
+
 function Update-TreeViewV2 {
     [CmdletBinding()]
     param (
@@ -697,11 +782,15 @@ function Update-TreeViewV2 {
     $TreeViewItem_Parent = New-Object System.Windows.Controls.TreeViewItem
     $TreeViewItem_Parent.Header = "$($HeaderRoot)"
 
+    $previousBackup = $null
+
     $ObjectData | ForEach-Object {
         # Add each restore folder as a top-level node.
         $TreeViewItem_Folder = New-Object System.Windows.Controls.TreeViewItem
         $TreeViewItem_Folder.Header = $_.Name
-        $TreeViewItem_Folder.ToolTip = "$($_.FullName)"
+
+        $changeInfo = Get-BackupChangeInfo -CurrentItems @($_.Items) -PreviousItems $(if ($previousBackup) { @($previousBackup.Items) } else { $null })
+        Set-BackupTreeNodeHighlight -TreeViewItem $TreeViewItem_Folder -FolderData $_ -ChangeInfo $changeInfo -PreviousBackupName $previousBackup.Name
 
         foreach ($Group in @($_.Items)) {
             if (-not $Group) {
@@ -748,6 +837,7 @@ function Update-TreeViewV2 {
         }
 
         $TreeViewItem_Parent.Items.Add($TreeViewItem_Folder)
+        $previousBackup = $_
     }
     $TreeVendorsProducts.Items.Add($TreeViewItem_Parent)
     # Expand the root item in the TreeView for better visibility of search results
@@ -778,6 +868,65 @@ function Clear-SelectedProductDetails {
 
     $LvwAdditionalFiles.Items.Clear()
     $LvwAdditionalFolders.Items.Clear()
+
+    Update-TabHighlights
+}
+
+function Set-TabHighlightState {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Controls.TabItem]
+        $Tab,
+
+        [Parameter(Mandatory = $true)]
+        [bool]
+        $HasData
+    )
+
+    if (-not $Tab.Tag) {
+        $Tab.Tag = if ($Tab.Header -is [System.Windows.Controls.TextBlock]) {
+            $Tab.Header.Text
+        }
+        else {
+            [string]$Tab.Header
+        }
+    }
+
+    if ($HasData) {
+        $Tab.Header = [System.Windows.Controls.TextBlock]@{
+            Text       = [string]$Tab.Tag
+            FontWeight = [System.Windows.FontWeights]::Bold
+            Foreground = [System.Windows.Media.Brushes]::DarkGreen
+            Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
+        }
+        return
+    }
+
+    $Tab.Header = [string]$Tab.Tag
+}
+
+function Update-TabHighlights {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        $ProductData
+    )
+
+    $hasPMPCData = $false
+    $hasInstallData = $false
+    $hasUninstallData = $false
+
+    if ($ProductData -and $ProductData.PrePostScriptInfo) {
+        $hasPMPCData = (@($ProductData.PrePostScriptInfo.PreScriptPMPC).Count -gt 0) -or (@($ProductData.PrePostScriptInfo.PostScriptPMPC).Count -gt 0)
+        $hasInstallData = (@($ProductData.PrePostScriptInfo.PreScript).Count -gt 0) -or (@($ProductData.PrePostScriptInfo.PostScript).Count -gt 0)
+        $hasUninstallData = (@($ProductData.PrePostScriptInfo.PreCommandUninstall).Count -gt 0) -or (@($ProductData.PrePostScriptInfo.PostCommandUninstall).Count -gt 0)
+    }
+
+    Set-TabHighlightState -Tab $TabPMPC -HasData $hasPMPCData
+    Set-TabHighlightState -Tab $TabInstall -HasData $hasInstallData
+    Set-TabHighlightState -Tab $TabUninstall -HasData $hasUninstallData
 }
 
 function Set-SelectedProductDetails {
@@ -822,6 +971,8 @@ function Set-SelectedProductDetails {
         # Add the folder to the Additional Folders ListView
         $LvwAdditionalFolders.Items.Add($Folder.Folder)
     }
+
+    Update-TabHighlights -ProductData $ProductData
 }
 
 #### Form Load #####

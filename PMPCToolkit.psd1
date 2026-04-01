@@ -28,16 +28,18 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @(
-        'Get-RunAs32On64'
-        'Get-SupportedProducts'
-        'Get-LatestCatalog'
-        'Invoke-PublisherSettingsBackupExtract'
-        'Get-HashFromDigest'
-        'Get-StringFromBase64'
-        'Get-AppWorkloadPolicies'
-        'Get-SelfUpdaterRegistryEntries'
-        'Get-BackupsPrePostScripts'
-        'Get-SPPrePostScripts'
+        'Get-PMPCRunAs32On64'
+        'Get-PMPCSupportedProducts'
+        'Get-PMPCLatestCatalog'
+        'Invoke-PMPCPublisherSettingsBackupExtract'
+        'Get-PMPCHashFromDigest'
+        'Get-PMPCStringFromBase64'
+        'Get-PMPCAppWorkloadPolicies'
+        'Get-PMPCSelfUpdaterRegistryEntries'
+        'Get-PMPCBackupSettings'
+        'Get-PMPCBackupSettingsPrePostScripts'
+        'Get-PMPCBackupSettingsEnabledTabs'
+        'Get-PMPCSPPrePostScripts'
     )
 
     PrivateData          = @{
