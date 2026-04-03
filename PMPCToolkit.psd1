@@ -30,7 +30,9 @@
     FunctionsToExport    = @(
         'Get-PMPCRunAs32On64'
         'Get-PMPCSupportedProducts'
-        'Get-PMPCLatestCatalog'
+        'Get-PMPCCatalog'
+        'Save-PMPCCatalogLicenseKey'
+        'Remove-PMPCCatalogLicenseKey'
         'Invoke-PMPCPublisherSettingsBackupExtract'
         'Get-PMPCHashFromDigest'
         'Get-PMPCStringFromBase64'
