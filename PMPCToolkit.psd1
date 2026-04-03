@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.13'
+    ModuleVersion        = '0.0.14'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -38,8 +38,13 @@
         'Get-PMPCSelfUpdaterRegistryEntries'
         'Get-PMPCBackupSettings'
         'Get-PMPCBackupSettingsPrePostScripts'
+        'Get-PMPCBackupSettingsIntuneOptions'
         'Get-PMPCBackupSettingsEnabledTabs'
+        'Get-PMPCBackupSettingsAutoPubIntune'
+        'Get-PMPCBackupSettingsAutoPubConfigMgr'
+        'Get-PMPCBackupSettingsSMSProvider'
         'Get-PMPCSPPrePostScripts'
+        'Get-PMPCConfMgrWorkloads'
     )
 
     PrivateData          = @{

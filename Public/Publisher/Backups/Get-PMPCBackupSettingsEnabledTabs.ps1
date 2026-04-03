@@ -1,7 +1,7 @@
 
 <#
 .SYNOPSIS
-Gets the enabled tabs from backup settings files.
+Retrieves the enabled tabs from backup settings files.
 
 .DESCRIPTION
 This function retrieves enabled tabs from settings backup files by scanning the restore folder structure.

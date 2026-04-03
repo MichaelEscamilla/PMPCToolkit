@@ -1,4 +1,4 @@
-function Get-BackupRestoredFolders{
+function Get-BackupRestoredFolders {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
@@ -31,5 +31,13 @@ function Get-BackupRestoredFolders{
         # Add the object to the $RestoreFoldersObject array
         $RestoreFoldersObject += $FolderInfo
     }
+
+    # Add the $BackupFilesPath to the $RestoreFoldersObject as the last object in the array
+    $BackupFilesPathObject = [PSCustomObject]@{
+        Name     = "Current Settings File"
+        FullName = $BackupFilesPath
+    }
+    $RestoreFoldersObject += $BackupFilesPathObject
+
     return $RestoreFoldersObject
 }

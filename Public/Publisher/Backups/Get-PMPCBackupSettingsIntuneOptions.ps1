@@ -20,7 +20,7 @@
 
     Searches the current directory for backup files and opens the Pre/Post script settings GUI.
 #>
-function Get-PMPCBackupSettingsPrePostScripts {
+function Get-PMPCBackupSettingsIntuneOptions {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
@@ -33,15 +33,16 @@ function Get-PMPCBackupSettingsPrePostScripts {
         # The Folder in the backup location where the restored CAB files will be saved.
         $BackupFolderName = "SettingsBackup-Restored"
     )
-
+    
     # Get Backup Restored Folders
     $BackupRestoredFoldersObject = Get-BackupRestoredFolders -BackupFilesPath $BackupFilesPath -BackupFolderName $BackupFolderName
 
-    # Add the Pre/Post Script Search Results to the Backup Restored Folders Object
+    # Add the Intune Options Search Results to the Backup Restored Folders Object
     foreach ($FolderInfo in $BackupRestoredFoldersObject) {
-        $PrePostScriptResults = Search-BackupSettingsWithPrePostScripts -SettingsFilePath (Join-Path -Path $FolderInfo.FullName -ChildPath "Settings.xml")
-        $FolderInfo | Add-Member -MemberType NoteProperty -Name "Items" -Value $PrePostScriptResults
+        $BackupResults = Search-BackupSettingsIntuneOptions -SettingsFilePath (Join-Path -Path $FolderInfo.FullName -ChildPath "Settings.xml")
+        $FolderInfo | Add-Member -MemberType NoteProperty -Name "Tenants" -Value $BackupResults
     }
+    #>
     
-    & "$($MyInvocation.MyCommand.Module.ModuleBase)\GUI\Backups\SearchBackupSettingswithPrePostScriptUI.ps1" -TreeViewItems $BackupRestoredFoldersObject
+    & "$($MyInvocation.MyCommand.Module.ModuleBase)\GUI\Backups\IntuneOptionsBackupViewerUI.ps1" -TreeViewItems $BackupRestoredFoldersObject
 }

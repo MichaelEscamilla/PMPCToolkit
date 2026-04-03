@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="The specified scripts, files and folders are packaged with the application content."
-        Height="768" Width="1204"
+        Height="840" Width="1204"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -115,11 +115,37 @@ Add-Type -AssemblyName WindowsBase
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="10"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-            <TabControl Grid.Row="0" Name="MainTabs">
+
+                <!-- Selected Backup Folder -->
+                <GroupBox Grid.Row="0" Padding="8" Header="Selected Backup">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="96"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="108"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Backup Folder" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Name="TxtSelectedFolder"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Folder Path" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Name="TxtSelectedFolderPath"/>
+                        <Button Grid.Row="2" Grid.Column="3" Name="BtnOpenFolder" Content="Open Folder" IsEnabled="False"/>
+                    </Grid>
+                </GroupBox>
+
+            <TabControl Grid.Row="2" Name="MainTabs">
                 <TabItem Name="TabPMPC" Header="PMPC">
                 <Grid Margin="6">
                     <!-- Scripts group -->
@@ -547,7 +573,7 @@ Add-Type -AssemblyName WindowsBase
             </TabControl>
 
             <!-- Additional files/folders group -->
-            <GroupBox Grid.Row="2" Header="Additional Files and Folders" Padding="8">
+            <GroupBox Grid.Row="4" Header="Additional Files and Folders" Padding="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -623,55 +649,6 @@ $reader = New-Object System.Xml.XmlNodeReader $xaml
 # Create Variables for all the controls in the XAML form
 $xaml.SelectNodes("//*[@Name]") | ForEach-Object { Set-Variable -Name ($_.Name) -Value $formProperties.FindName($_.Name) -Scope Global }
 
-
-function Update-TreeView {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $XMLData,
-
-        [string]
-        $HeaderRoot = "All Products"
-    )
-
-    # Check for a null value
-    if ([string]::IsNullOrWhiteSpace($XMLData)) {
-        return
-    }   
-
-    # Clear the TreeView
-    $TreeVendorsProducts.Items.Clear()
-
-    # Add each Vendor Name to the TreeView
-    $TreeViewItem_Parent = New-Object System.Windows.Controls.TreeViewItem
-    $TreeViewItem_Parent.Header = "$($HeaderRoot)"
-            
-    $XMLData | ForEach-Object {
-        # Add each Vendor Name to the TreeView
-        $TreeViewItem_Vendor = New-Object System.Windows.Controls.TreeViewItem
-        $TreeViewItem_Vendor.Header = $_.name
-        $TreeViewItem_Vendor.ToolTip = "$($_.id)"
-        $TreeViewItem_Parent.Items.Add($TreeViewItem_Vendor)
-
-        # Loop through each Vendor and add each Product Name to the TreeView
-        $_.Product | ForEach-Object {
-            # Add each Product Name to the TreeView
-            $TreeViewItem_Product = New-Object System.Windows.Controls.TreeViewItem
-            if ($_.Capability -ne 'UpdateAndInstall') {
-                $TreeViewItem_Product.Header = "$($_.name) - ($($_.Capability))"
-            }
-            else {
-                $TreeViewItem_Product.Header = "$($_.name)"
-            }
-            $TreeViewItem_Product.ToolTip = "$($_.id)"
-            $TreeViewItem_Product.Uid = "$($_.id)"
-            $TreeViewItem_Vendor.Items.Add($TreeViewItem_Product)
-        }
-    }
-    $TreeVendorsProducts.Items.Add($TreeViewItem_Parent)
-    # Expand the root item in the TreeView for better visibility of search results
-    $TreeViewItem_Parent.IsExpanded = $true
-}
 
 function ConvertTo-BackupComparisonState {
     [CmdletBinding()]
@@ -761,7 +738,7 @@ function Set-BackupTreeNodeHighlight {
     #$TreeViewItem.FontWeight = [System.Windows.FontWeights]::Bold
 }
 
-function Update-TreeViewV2 {
+function Update-TreeView {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -788,6 +765,7 @@ function Update-TreeViewV2 {
         # Add each restore folder as a top-level node.
         $TreeViewItem_Folder = New-Object System.Windows.Controls.TreeViewItem
         $TreeViewItem_Folder.Header = $_.Name
+        $TreeViewItem_Folder.Tag = $_
 
         $changeInfo = Get-BackupChangeInfo -CurrentItems @($_.Items) -PreviousItems $(if ($previousBackup) { @($previousBackup.Items) } else { $null })
         Set-BackupTreeNodeHighlight -TreeViewItem $TreeViewItem_Folder -FolderData $_ -ChangeInfo $changeInfo -PreviousBackupName $previousBackup.Name
@@ -799,6 +777,7 @@ function Update-TreeViewV2 {
 
             $TreeViewItem_Group = New-Object System.Windows.Controls.TreeViewItem
             $TreeViewItem_Group.Header = if ($Group.Name) { "$($Group.Name)" } else { "Products" }
+            $TreeViewItem_Group.Tag = $_
 
             foreach ($Product in @($Group.Products)) {
                 if (-not $Product) {
@@ -817,15 +796,10 @@ function Update-TreeViewV2 {
 
                 $TreeViewItem_Product = New-Object System.Windows.Controls.TreeViewItem
                 $TreeViewItem_Product.Header = $ProductName
-                $TreeViewItem_Product.Tag = $Product
-
-                $ProductDetails = @()
-                if ($Product.RecommendedPreScriptPath) { $ProductDetails += "Pre Script: $($Product.RecommendedPreScriptPath)" }
-                if ($Product.RecommendedPostScriptPath) { $ProductDetails += "Post Script: $($Product.RecommendedPostScriptPath)" }
-                if ($Product.PreCommand) { $ProductDetails += "Pre Command: $($Product.PreCommand)" }
-                if ($Product.PostCommand) { $ProductDetails += "Post Command: $($Product.PostCommand)" }
-                if ($ProductDetails.Count -gt 0) {
-                    $TreeViewItem_Product.ToolTip = ($ProductDetails -join [Environment]::NewLine)
+                $TreeViewItem_Product.Tag = @{
+                    Product = $Product
+                    Name = $_.Name
+                    FullName = $_.FullName
                 }
 
                 $TreeViewItem_Group.Items.Add($TreeViewItem_Product)
@@ -842,6 +816,22 @@ function Update-TreeViewV2 {
     $TreeVendorsProducts.Items.Add($TreeViewItem_Parent)
     # Expand the root item in the TreeView for better visibility of search results
     $TreeViewItem_Parent.IsExpanded = $true
+}
+
+function Clear-SelectedFolder {
+    $TxtSelectedFolder.Text = ""
+    $TxtSelectedFolderPath.Text = ""
+    $BtnOpenFolder.IsEnabled = $false
+}
+
+function Set-SelectedFolder {
+    param (
+        [Parameter(Mandatory = $true)]
+        $SelectedNode
+    )
+    $TxtSelectedFolder.Text = "$($SelectedNode.Tag.Name)"
+    $TxtSelectedFolderPath.Text = "$($SelectedNode.Tag.FullName)"
+    $BtnOpenFolder.IsEnabled = $true
 }
 
 function Clear-SelectedProductDetails {
@@ -940,24 +930,24 @@ function Set-SelectedProductDetails {
 
     $PTxtPreScript.Text = "$($ProductData.PrePostScriptInfo.PreScriptPMPC.Path)"
     $PTxtPreArg.Text = "$($ProductData.PrePostScriptInfo.PreScriptPMPC.Args)"
-    $PChkPreStopUpdate.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreScriptPMPC.Abort
-    $PChkPreRunBefore.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreScriptPMPC.RBSK
+    $PChkPreStopUpdate.IsChecked = $ProductData.PrePostScriptInfo.PreScriptPMPC.Abort -eq $true
+    $PChkPreRunBefore.IsChecked = $ProductData.PrePostScriptInfo.PreScriptPMPC.RBSK -eq $true
 
     $PTxtPostScript.Text = "$($ProductData.PrePostScriptInfo.PostScriptPMPC.Path)"
     $PTxtPostArg.Text = "$($ProductData.PrePostScriptInfo.PostScriptPMPC.Args)"
 
     $TxtPreScript.Text = "$($ProductData.PrePostScriptInfo.PreScript.Path)"
     $TxtPreArg.Text = "$($ProductData.PrePostScriptInfo.PreScript.Args)"
-    $ChkPreStopUpdate.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreScript.Abort
-    $ChkPreRunBefore.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreScript.RBSK
+    $ChkPreStopUpdate.IsChecked = $ProductData.PrePostScriptInfo.PreScript.Abort -eq $true
+    $ChkPreRunBefore.IsChecked = $ProductData.PrePostScriptInfo.PreScript.RBSK -eq $true
 
     $TxtPostScript.Text = "$($ProductData.PrePostScriptInfo.PostScript.Path)"
     $TxtPostArg.Text = "$($ProductData.PrePostScriptInfo.PostScript.Args)"
 
     $UTxtPreScript.Text = "$($ProductData.PrePostScriptInfo.PreCommandUninstall.Path)"
     $UTxtPreArg.Text = "$($ProductData.PrePostScriptInfo.PreCommandUninstall.Args)"
-    $UChkPreStopUpdate.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreCommandUninstall.Abort
-    $UChkPreRunBefore.IsChecked = [bool]$ProductData.PrePostScriptInfo.PreCommandUninstall.RBSK
+    $UChkPreStopUpdate.IsChecked = $ProductData.PrePostScriptInfo.PreCommandUninstall.Abort -eq $true
+    $UChkPreRunBefore.IsChecked = $ProductData.PrePostScriptInfo.PreCommandUninstall.RBSK -eq $true
 
     $UTxtPostScript.Text = "$($ProductData.PrePostScriptInfo.PostCommandUninstall.Path)"
     $UTxtPostArg.Text = "$($ProductData.PrePostScriptInfo.PostCommandUninstall.Args)"
@@ -978,7 +968,7 @@ function Set-SelectedProductDetails {
 #### Form Load #####
 $formProperties.Add_Loaded({
         # Update the TreeView
-        Update-TreeViewV2 -ObjectData $TreeViewItems
+        Update-TreeView -ObjectData $TreeViewItems
     })
 
 $lnkMoreInfo.Add_Click({
@@ -987,18 +977,44 @@ $lnkMoreInfo.Add_Click({
 
 $TreeVendorsProducts.Add_SelectedItemChanged({
         $SelectedNode = $TreeVendorsProducts.SelectedItem
+
+        # If no node is selected, clear the product details and selected folder information.
         if (-not $SelectedNode) {
             Clear-SelectedProductDetails
+            Clear-SelectedFolder
+            return
+        }
+        # If the selected node doesn't have a Tag property, clear the product details and selected folder information.
+        elseif (-not $SelectedNode.Tag) {
+            Clear-SelectedProductDetails
+            Clear-SelectedFolder
+            return
+        }
+        # If the selected node's Tag property doesn't have a Product, only clear the ProductDetails
+        elseif (-not $SelectedNode.Tag.Product) {
+            Clear-SelectedProductDetails
+            Set-SelectedFolder -SelectedNode $SelectedNode
             return
         }
 
-        $SelectedData = $SelectedNode.Tag
-        if (-not $SelectedData) {
-            Clear-SelectedProductDetails
-            return
+        # Set the Backup Folder and Product Details
+        Set-SelectedFolder -SelectedNode $SelectedNode
+        Set-SelectedProductDetails -ProductData $SelectedNode.Tag.Product
+    })
+
+$BtnOpenFolder.Add_Click({
+        if (-not [string]::IsNullOrWhiteSpace($TxtSelectedFolderPath.Text) -and (Test-Path -LiteralPath $TxtSelectedFolderPath.Text)) {
+            try {
+                # Open the backup folder in File Explorer with the file selected
+                #Start-Process -FilePath "explorer.exe" -ArgumentList "$($TxtSelectedFolderPath.Text)"
+                Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$($TxtSelectedFolderPath.Text)\Settings.xml`""
+                Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] Successfully Opened: [$($TxtSelectedFolderPath.Text)]"
+            }
+            catch {
+                Write-Host "Failed to open the backup folder in File Explorer"
+                Write-Error "$($_.Exception.Message)"
+            }
         }
-        
-        Set-SelectedProductDetails -ProductData $SelectedData
     })
 
 
