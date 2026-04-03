@@ -1,45 +1,6 @@
-
-<#
-    .SYNOPSIS
-    Downloads and extracts the latest Patch My PC catalog.
-
-    .DESCRIPTION
-    This function downloads the latest catalog from Patch My PC using a provided license key.
-    It can optionally extract all files from the catalog or just the primary XML file.
-    The extracted files are saved to a specified destination folder.
-
-    .PARAMETER License
-    The license key required to download the Patch My PC catalog from the API.
-
-    .PARAMETER Destination
-    The destination path where the LatestCatalog folder will be created.
-    Defaults to the path returned by Get-LatestCatalogPath.
-
-    .PARAMETER ExtractAll
-    If specified, extracts all files from the catalog CAB file.
-    If not specified, only extracts the PatchMyPC.xml file.
-
-    .EXAMPLE
-    Get-LatestCatalog -License "your-license-key"
-
-    Downloads the latest catalog and extracts only the PatchMyPC.xml file to the default location.
-
-    .EXAMPLE
-    Get-LatestCatalog -License "your-license-key" -Destination "C:\Custom\Path" -ExtractAll
-
-    Downloads the latest catalog, extracts all files to C:\Custom\Path\LatestCatalog, and opens the folder in File Explorer.
-
-    .NOTES
-    This function requires internet connectivity and administrative privileges to create directories.
-    It uses expand.exe to extract CAB files and opens the result in Windows File Explorer.
-#>
-function Get-PMPCLatestCatalog {
+function Get-PMPCCatalog {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $License,
-
         [Parameter(Mandatory = $false)]
         [string]
         $Destination,
@@ -53,12 +14,19 @@ function Get-PMPCLatestCatalog {
         $NoExplorer
     )
 
+    # Get stored license key
+    $LicenseKey = Get-CatalogLicenseKey
+    if (-not $LicenseKey) {
+        Write-Host -ForegroundColor Red "No license key found. Please save your license key using Save-PMPCCatalogLicenseKey before retrieving the catalog."
+        return
+    }
+
     # Default Destination Path
     $DestinationDefault = Join-Path -Path "$($PMPCToolkitModule.Module.DefaultCachePath)" -ChildPath "$($PMPCToolkitModule.Module.DefaultCacheFolderName)"
-    $DestinationDefault = Join-Path -Path $DestinationDefault -ChildPath "LatestCatalog"
+    $DestinationDefault = Join-Path -Path $DestinationDefault -ChildPath "$($PMPCToolkitModule.Catalog.DefaultCacheFolderName)"
 
     # Define Latest Catalog Url
-    $LatestCatalogUrl = "https://api.patchmypc.com/subscriber_download.php?id=$($License)"
+    $LatestCatalogUrl = "$($PMPCToolkitModule.Catalog.CatalogURL)$($LicenseKey)"
 
     # Define Latest Catalog CAB Name
     $CatalogCABFileName = "$($PMPCToolkitModule.Catalog.CatalogCABFileName)"
@@ -76,7 +44,7 @@ function Get-PMPCLatestCatalog {
 
     # Delete Existing $LatestCatalogFolder
     Remove-Item -Path "$($LatestCatalogFolder)" -Recurse -Force -ErrorAction SilentlyContinue
-
+    
     # Create $LatestCatalogFolder
     try {
         # Create the Destination
@@ -105,12 +73,12 @@ function Get-PMPCLatestCatalog {
 
     # Define Latest Catalog XML File FullName
     $CatalogXMLFileNameFullName = Join-Path $LatestCatalogFolder $CatalogXMLFileName
-
+    
     # Download the Catalog
     try {
         Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Downloading: [$LatestCatalogUrl]"
         Invoke-WebRequest -Uri $LatestCatalogUrl -OutFile "$($CatalogCABFileNameFullName)"
-        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully Downloaded: [$LatestCatalogUrl]"
+        Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully Downloaded Catalog"
     }
     catch {
         Write-Host "Failed to download the Latest Catalog CAB file"

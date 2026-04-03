@@ -4,6 +4,7 @@
         "DefaultCacheFolderName": "PMPCToolkit"
     },
     "Catalog": {
+        "CatalogURL": "https://api.patchmypc.com/subscriber_download.php?id=",
         "DefaultCacheFolderName": "LatestCatalog",
         "CatalogCABFileName": "Catalog.cab",
         "CatalogXMLFileName": "PatchMyPC.xml"
