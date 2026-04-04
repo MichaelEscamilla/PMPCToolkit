@@ -1,4 +1,25 @@
 function Get-PMPCBackupSettings {
+    <#
+    .SYNOPSIS
+        Launches an Out-GridView window to select and execute PMPC backup settings function.
+
+    .DESCRIPTION
+        Discovers all backup settings functions located in the same directory as this script,
+        reads each function's synopsis from its comment-based help, and presents them in an
+        Out-GridView window for selection. When the user selects a function, it is dot-sourced
+        and executed.
+
+    .EXAMPLE
+        Get-PMPCBackupSettings
+
+        Opens an Out-GridView window listing all available backup settings functions. Selecting one
+        executes that function interactively.
+
+    .NOTES
+        The function reads the .SYNOPSIS block from each sibling .ps1 file to populate the
+        Description column in the grid view. Files without comment-based help will display
+        'No description available.'
+    #>
     # Build function metadata so Out-GridView can show a useful description.
     $functions = Get-ChildItem -Path $PSScriptRoot -Filter "*.ps1" |
         Where-Object { $_.Name -ne "Get-PMPCBackupSettings.ps1" } |
