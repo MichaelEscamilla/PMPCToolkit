@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Intune Assignments Viewer"
-        Height="740" Width="1300"
+        Height="740" Width="1675"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -149,7 +149,7 @@ Add-Type -AssemblyName WindowsBase
                                     <DataGridTextColumn Header="Notification" Width="95" Binding="{Binding Notification}"/>
                                     <DataGridTextColumn Header="DO Priority" Width="90" Binding="{Binding DOPriority}"/>
                                     <DataGridTextColumn Header="Filter Mode" Width="95" Binding="{Binding FilterType}"/>
-                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding Filter}"/>
+                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding FilterId}"/>
                                     <DataGridTextColumn Header="Available Time" Width="110" Binding="{Binding AvailableTime}"/>
                                     <DataGridTextColumn Header="Deadline" Width="95" Binding="{Binding Deadline}"/>
                                     <DataGridTextColumn Header="Grace Period" Width="95" Binding="{Binding GracePeriod}"/>
@@ -171,7 +171,7 @@ Add-Type -AssemblyName WindowsBase
                                     <DataGridTextColumn Header="Notification" Width="95" Binding="{Binding Notification}"/>
                                     <DataGridTextColumn Header="DO Priority" Width="90" Binding="{Binding DOPriority}"/>
                                     <DataGridTextColumn Header="Filter Mode" Width="95" Binding="{Binding FilterType}"/>
-                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding Filter}"/>
+                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding FilterId}"/>
                                     <DataGridTextColumn Header="Available Time" Width="110" Binding="{Binding AvailableTime}"/>
                                     <DataGridTextColumn Header="Grace Period" Width="95" Binding="{Binding GracePeriod}"/>
                                 </DataGrid.Columns>
@@ -192,7 +192,7 @@ Add-Type -AssemblyName WindowsBase
                                     <DataGridTextColumn Header="Notification" Width="95" Binding="{Binding Notification}"/>
                                     <DataGridTextColumn Header="DO Priority" Width="90" Binding="{Binding DOPriority}"/>
                                     <DataGridTextColumn Header="Filter Mode" Width="95" Binding="{Binding FilterType}"/>
-                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding Filter}"/>
+                                    <DataGridTextColumn Header="Filter" Width="160" Binding="{Binding FilterId}"/>
                                     <DataGridTextColumn Header="Deadline" Width="110" Binding="{Binding Deadline}"/>
                                     <DataGridTextColumn Header="Grace Period" Width="95" Binding="{Binding GracePeriod}"/>
                                 </DataGrid.Columns>
@@ -234,6 +234,99 @@ $xaml.SelectNodes('//*[@Name]') | ForEach-Object {
     Set-Variable -Name $_.Name -Value $formIntuneAssignments.FindName($_.Name) -Scope Script
 }
 
+function ConvertTo-ComparisonState {
+    param (
+        [object[]]$Items
+    )
+    $lines = foreach ($backup in @($Items)) {
+        foreach ($tenant in @($backup.Tenants)) {
+            foreach ($node in @($tenant.ProductList)) {
+                foreach ($product in @($node.Products)) {
+                    foreach ($assignment in @($product.Assignments)) {
+                        foreach ($row in @($assignment.Assignment)) {
+                            "$($tenant.Name)|$($node.Name)|$($product.ProductName)|$($product.EnforceIntuneAssignments)|$($assignment.Intent)|$($row.GroupName)|$($row.Mode)|$($row.Notification)|$($row.DOPriority)|$($row.FilterType)|$($row.FilterId)|$($row.AvailableTime)|$($row.Deadline)|$($row.GracePeriod)"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return ($lines | Sort-Object) -join "`n"
+}
+
+function Get-BackupChangeInfo {
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]
+        $CurrentItems,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object[]]
+        $PreviousItems
+    )
+
+    if (-not $PreviousItems) {
+        return @{
+            HasChanges = $false
+            Summary    = 'Baseline backup'
+        }
+    }
+    
+    $currentState = ConvertTo-ComparisonState -Items $CurrentItems
+    $previousState = ConvertTo-ComparisonState -Items $PreviousItems
+
+    $hasChanges = ($previousState -ne $currentState)
+    #$hasChanges = ($PreviousItems -ne $CurrentItems)
+
+    return [PSCustomObject]@{
+        HasChanges = $hasChanges
+        Summary    = if ($hasChanges) { 'Changes detected' } else { 'No changes' }
+    }
+}
+
+function Set-BackupTreeNodeHighlight {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        $TreeViewItem,
+
+        [Parameter(Mandatory = $true)]
+        $FolderData,
+
+        [Parameter(Mandatory = $true)]
+        $ChangeInfo,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]
+        $PreviousBackupName
+    )
+
+    $tooltipLines = @(
+        [string]$FolderData.FullName
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PreviousBackupName)) {
+        $tooltipLines += 'Baseline backup'
+    }
+    else {
+        $tooltipLines += "Compared to: $PreviousBackupName"
+        $tooltipLines += "Changes: $($ChangeInfo.Summary)"
+    }
+
+    $TreeViewItem.ToolTip = $tooltipLines -join [Environment]::NewLine
+
+    if (-not $ChangeInfo.HasChanges) {
+        return
+    }
+
+    $TreeViewItem.Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
+    #$TreeViewItem.Foreground = [System.Windows.Media.Brushes]::DarkSlateGray
+    #$TreeViewItem.FontWeight = [System.Windows.FontWeights]::Bold
+}
+
 function Update-TreeView {
     param (
         [Parameter(Mandatory = $true)]
@@ -250,6 +343,8 @@ function Update-TreeView {
     $TreeViewItem_Parent = New-Object System.Windows.Controls.TreeViewItem
     $TreeViewItem_Parent.Header = $HeaderRoot
 
+    $previousBackup = $null
+
     foreach ($Object in $ObjectData) {
         # Create a TreeViewItem for the Backup Folder
         $TreeViewItem_Backup = New-Object System.Windows.Controls.TreeViewItem
@@ -260,6 +355,10 @@ function Update-TreeView {
             FullName = $Object.FullName
             Backup   = $Object
         }
+
+        # Check for Changes
+        $ChangeInfo = Get-BackupChangeInfo -CurrentItems @($Object) -PreviousItems $previousBackup
+        Set-BackupTreeNodeHighlight -TreeViewItem $TreeViewItem_Backup -FolderData $Object -ChangeInfo $ChangeInfo -PreviousBackupName $previousBackup.Name
 
         foreach ($Tenant in @($Object.Tenants)) {
             if (-not $Tenant) {
@@ -312,6 +411,9 @@ function Update-TreeView {
 
         # Add the Backup Folder node to the Root
         $TreeViewItem_Parent.Items.Add($TreeViewItem_Backup)
+
+        # Update the previous backup variable for the next iteration
+        $previousBackup = $Object
     }
     $TreeBackupFolders.Items.Add($TreeViewItem_Parent)
     $TreeViewItem_Parent.IsExpanded = $true
@@ -330,22 +432,28 @@ function Set-SelectedProductDetails {
         # Add to the DataGrid
         switch ($Assignment.Intent) {
             "Required" {
+                # Leaving these here for the future. Will reset the column widths initialls before setting the items
+                #$DgRequiredAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::SizeToHeader }
                 $DgRequiredAssignments.Items.Add($PSObjectAssignment)
                 # Resize the columns to fit the content
                 $DgRequiredAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::Auto }
             }
             "Available" {
+                $DgAvailableAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::SizeToHeader }
                 $DgAvailableAssignments.Items.Add($PSObjectAssignment)
                 $DgAvailableAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::Auto }
             }
             "Uninstall" {
+                $DgUninstallAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::SizeToHeader }
                 $DgUninstallAssignments.Items.Add($PSObjectAssignment)
                 $DgUninstallAssignments.Columns | ForEach-Object { $_.Width = [System.Windows.Controls.DataGridLength]::Auto }
             }
         }
     }
-}
 
+    # Set the override checkbox state and enable it if there are any assignments
+    $ChkOverrideManualAssignments.IsChecked = $ProductData.EnforceIntuneAssignments -eq $true
+}
 
 function Clear-ProductDetails {
     $DgRequiredAssignments.Items.Clear()
