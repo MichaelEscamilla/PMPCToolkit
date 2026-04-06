@@ -42,6 +42,7 @@
         'Get-PMPCBackupSettings'
         'Get-PMPCBackupSettingsPrePostScripts'
         'Get-PMPCBackupSettingsIntuneOptions'
+        'Get-PMPCBackupSettingsIntuneAssignments'
         'Get-PMPCBackupSettingsEnabledTabs'
         'Get-PMPCBackupSettingsAutoPubIntune'
         'Get-PMPCBackupSettingsAutoPubConfigMgr'
