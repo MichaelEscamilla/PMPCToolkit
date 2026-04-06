@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.17'
+    ModuleVersion        = '0.0.18'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -33,7 +33,7 @@
         'Get-PMPCCatalog'
         'Save-PMPCCatalogLicenseKey'
         'Remove-PMPCCatalogLicenseKey'
-        'Invoke-PMPCPublisherSettingsBackupExtract'
+        'Invoke-PMPCBackupSettingsExtract'
         'Get-PMPCHashFromDigest'
         'Search-StringInFiles'
         'Get-PMPCStringFromBase64'

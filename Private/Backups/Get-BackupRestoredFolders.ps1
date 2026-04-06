@@ -16,6 +16,12 @@ function Get-BackupRestoredFolders {
     $RestoreFolderPath = Join-Path -Path "$($BackupFilesPath)" -ChildPath "$($BackupFolderName)"
     Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Restore Folder Path: [$RestoreFolderPath]"
 
+    # Check if the Restore Folder Path exists, if not run Invoke-PMPCBackupSettingsExtract
+    if (-not (Test-Path -Path $RestoreFolderPath)) {
+        Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Restore Folder Path does not exist. Running Invoke-PMPCBackupSettingsExtract..."
+        Invoke-PMPCBackupSettingsExtract -BackupFilesPath $BackupFilesPath -BackupFolderName $BackupFolderName
+    }
+
     # Get all Folders in the $RestoreFolderPath
     $RestoreFolders = Get-ChildItem -Path $RestoreFolderPath -Directory
     # Create and array to store folder object

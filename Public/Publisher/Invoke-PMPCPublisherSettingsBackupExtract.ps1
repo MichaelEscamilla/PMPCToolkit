@@ -22,7 +22,7 @@
     Requires Windows expand.exe utility.
 #>
 
-function Invoke-PMPCPublisherSettingsBackupExtract {
+function Invoke-PMPCBackupSettingsExtract {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
