@@ -104,10 +104,30 @@ Add-Type -AssemblyName WindowsBase
 
                 <!-- Left: Backup / Tenant tree -->
                 <GroupBox Grid.Column="0" Header="Intune Tenants" Padding="8">
-                    <TreeView Name="TreeBackupFolders"
-                              BorderBrush="#D2D2D2"
-                              BorderThickness="1"
-                              Background="White"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="6"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Margin="0,0,0,4"
+                                   Text="Search Product"
+                                   VerticalAlignment="Center"/>
+
+                        <TextBox Grid.Row="0"
+                                 Name="TxtProductSearch"
+                                 Margin="95,0,0,0"
+                                 Height="24"
+                                 VerticalAlignment="Center"/>
+
+                        <TreeView Grid.Row="2"
+                                  Name="TreeBackupFolders"
+                                  BorderBrush="#D2D2D2"
+                                  BorderThickness="1"
+                                  Background="White"/>
+                    </Grid>
                 </GroupBox>
 
                 <!-- Right: Assignment details panels -->
@@ -128,10 +148,10 @@ Add-Type -AssemblyName WindowsBase
                                 <ColumnDefinition Width="108"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Backup Folder" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" Name="TxtSelectedFolder" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="TxtSelectedFolder" Height="24" VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Folder Path" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Name="TxtSelectedFolderPath" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Name="TxtSelectedFolderPath" Height="24" VerticalAlignment="Center"/>
                             <Button Grid.Row="2" Grid.Column="3" Name="BtnOpenFolder" Content="Open Folder" IsEnabled="False"/>
                         </Grid>
                     </GroupBox>
@@ -391,6 +411,7 @@ function Update-TreeView {
                     if (-not $Product) {
                         continue
                     }
+
                     $TreeViewItem_Product = New-Object System.Windows.Controls.TreeViewItem
                     $TreeViewItem_Product.Header = $Product.ProductName
                     $TreeViewItem_Product.Tag = @{
@@ -417,6 +438,49 @@ function Update-TreeView {
     }
     $TreeBackupFolders.Items.Add($TreeViewItem_Parent)
     $TreeViewItem_Parent.IsExpanded = $true
+}
+
+function Invoke-ProductSearchFilter {
+    [CmdletBinding()]
+    param ()
+
+    $search = $TxtProductSearch.Text.Trim()
+    $hasSearch = -not [string]::IsNullOrWhiteSpace($search)
+
+    $rootNode = $TreeBackupFolders.Items[0]
+    if (-not $rootNode) { return }
+
+    foreach ($backupNode in $rootNode.Items) {
+        $backupHasMatch = $false
+
+        foreach ($tenantNode in $backupNode.Items) {
+            $tenantHasMatch = $false
+
+            foreach ($productNodeItem in $tenantNode.Items) {
+                $nodeHasMatch = $false
+
+                foreach ($productItem in $productNodeItem.Items) {
+                    if ($hasSearch) {
+                        $isMatch = ([string]$productItem.Header).IndexOf($search, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                        $productItem.Visibility = if ($isMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+                        if ($isMatch) { $nodeHasMatch = $true }
+                    }
+                    else {
+                        $productItem.Visibility = [System.Windows.Visibility]::Visible
+                        $nodeHasMatch = $true
+                    }
+                }
+
+                $productNodeItem.Visibility = if ($nodeHasMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+                if ($nodeHasMatch) { $tenantHasMatch = $true }
+            }
+
+            $tenantNode.Visibility = if ($tenantHasMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+            if ($tenantHasMatch) { $backupHasMatch = $true }
+        }
+
+        $backupNode.Visibility = if ($backupHasMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+    }
 }
 
 function Set-SelectedProductDetails {
@@ -475,11 +539,20 @@ function Set-SelectedFolder {
 
 #### Form Load #####
 $formIntuneAssignments.Add_Loaded({
-        Update-TreeView -ObjectData $TreeViewItems
+        $script:TreeViewItemsSource = @($TreeViewItems)
+        Update-TreeView -ObjectData $script:TreeViewItemsSource
+    })
+
+$TxtProductSearch.Add_TextChanged({
+        Invoke-ProductSearchFilter
     })
 
 $TreeBackupFolders.Add_SelectedItemChanged({
         $SelectedNode = $TreeBackupFolders.SelectedItem
+
+        if (-not $SelectedNode -or -not $SelectedNode.Tag) {
+            return
+        }
 
         Clear-ProductDetails
         
