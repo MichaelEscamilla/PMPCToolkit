@@ -87,7 +87,7 @@ function Get-PMPCSupportedProducts {
     if (-not $NoExplorer) {
         try {
             Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Opening: [$SupportedProductsFolder]"
-            Start-Process -FilePath "explorer.exe" -ArgumentList "$($SupportedProductsFolder)" -Wait
+            Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$($SupportedProductsFileFullName)`""
             Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully opened:[$SupportedProductsFolder]"
         }
         catch {
