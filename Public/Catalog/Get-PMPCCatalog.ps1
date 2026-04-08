@@ -108,7 +108,7 @@ function Get-PMPCCatalog {
     if (-not $NoExplorer) {
         try {
             Write-Verbose "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Opening: [$LatestCatalogFolder]"
-            Start-Process -FilePath "explorer.exe" -ArgumentList "$($LatestCatalogFolder)" -Wait
+            Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$($CatalogXMLFileNameFullName)`""
             Write-Host -ForegroundColor DarkGray "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] Successfully Opened: [$($LatestCatalogFolder)]"
         }
         catch {
