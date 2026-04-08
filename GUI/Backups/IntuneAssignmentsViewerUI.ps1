@@ -11,7 +11,7 @@ Add-Type -AssemblyName WindowsBase
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Intune Assignments Viewer"
-        Height="740" Width="1675"
+        Height="740" Width="1775"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -97,7 +97,7 @@ Add-Type -AssemblyName WindowsBase
             <!-- ==================== Main Content (Two-Column Layout) ==================== -->
             <Grid Grid.Row="1" Grid.RowSpan="2" Margin="10,8,10,8">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="400"/>
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
@@ -254,24 +254,27 @@ $xaml.SelectNodes('//*[@Name]') | ForEach-Object {
     Set-Variable -Name $_.Name -Value $formIntuneAssignments.FindName($_.Name) -Scope Script
 }
 
-function ConvertTo-ComparisonState {
+function ConvertTo-ProductStateMap {
     param (
         [object[]]$Items
     )
-    $lines = foreach ($backup in @($Items)) {
+    $map = @{}
+    foreach ($backup in @($Items)) {
         foreach ($tenant in @($backup.Tenants)) {
             foreach ($node in @($tenant.ProductList)) {
                 foreach ($product in @($node.Products)) {
-                    foreach ($assignment in @($product.Assignments)) {
+                    $key = "$($tenant.Name)|$($node.Name)|$($product.ProductName)"
+                    $lines = foreach ($assignment in @($product.Assignments)) {
                         foreach ($row in @($assignment.Assignment)) {
-                            "$($tenant.Name)|$($node.Name)|$($product.ProductName)|$($product.EnforceIntuneAssignments)|$($assignment.Intent)|$($row.GroupName)|$($row.Mode)|$($row.Notification)|$($row.DOPriority)|$($row.FilterType)|$($row.FilterId)|$($row.AvailableTime)|$($row.Deadline)|$($row.GracePeriod)"
+                            "$($product.EnforceIntuneAssignments)|$($assignment.Intent)|$($row.GroupName)|$($row.Mode)|$($row.Notification)|$($row.DOPriority)|$($row.FilterType)|$($row.FilterId)|$($row.AvailableTime)|$($row.Deadline)|$($row.GracePeriod)"
                         }
                     }
+                    $map[$key] = ($lines | Sort-Object) -join "`n"
                 }
             }
         }
     }
-    return ($lines | Sort-Object) -join "`n"
+    return $map
 }
 
 function Get-BackupChangeInfo {
@@ -288,21 +291,37 @@ function Get-BackupChangeInfo {
     )
 
     if (-not $PreviousItems) {
-        return @{
-            HasChanges = $false
-            Summary    = 'Baseline backup'
+        return [PSCustomObject]@{
+            HasChanges      = $false
+            Summary         = 'Baseline backup'
+            ChangedProducts = [System.Collections.Generic.HashSet[string]]::new()
         }
     }
-    
-    $currentState = ConvertTo-ComparisonState -Items $CurrentItems
-    $previousState = ConvertTo-ComparisonState -Items $PreviousItems
 
-    $hasChanges = ($previousState -ne $currentState)
-    #$hasChanges = ($PreviousItems -ne $CurrentItems)
+    $currentMap  = ConvertTo-ProductStateMap -Items $CurrentItems
+    $previousMap = ConvertTo-ProductStateMap -Items $PreviousItems
+
+    $changedProducts = [System.Collections.Generic.HashSet[string]]::new()
+
+    # Products that are new or have changed assignments
+    foreach ($key in $currentMap.Keys) {
+        if (-not $previousMap.ContainsKey($key) -or $previousMap[$key] -ne $currentMap[$key]) {
+            $null = $changedProducts.Add($key)
+        }
+    }
+    # Products present in previous but removed in current
+    foreach ($key in $previousMap.Keys) {
+        if (-not $currentMap.ContainsKey($key)) {
+            $null = $changedProducts.Add($key)
+        }
+    }
+
+    $hasChanges = $changedProducts.Count -gt 0
 
     return [PSCustomObject]@{
-        HasChanges = $hasChanges
-        Summary    = if ($hasChanges) { 'Changes detected' } else { 'No changes' }
+        HasChanges      = $hasChanges
+        Summary         = if ($hasChanges) { "$($changedProducts.Count) product(s) changed" } else { 'No changes' }
+        ChangedProducts = $changedProducts
     }
 }
 
@@ -399,13 +418,15 @@ function Update-TreeView {
                 }
 
                 $TreeViewItem_ProductNode = New-Object System.Windows.Controls.TreeViewItem
-                $TreeViewItem_ProductNode.Header = $ProductNode.Name
+                $TreeViewItem_ProductNode.Header = "$($ProductNode.Name) - $($ProductNode.Products.Count)"
                 $TreeViewItem_ProductNode.Tag = @{
                     Level    = "ProductNode"
                     Name     = $Object.Name
                     FullName = $Object.FullName
                     Product  = $ProductNode
                 }
+
+                $productNodeHasChanges = $false
 
                 foreach ($Product in @($ProductNode.Products)) {
                     if (-not $Product) {
@@ -421,7 +442,20 @@ function Update-TreeView {
                         ProductDetails = $Product
                     }
 
+                    # Highlight products whose assignments changed since the previous backup
+                    $productKey = "$($Tenant.Name)|$($ProductNode.Name)|$($Product.ProductName)"
+                    if ($ChangeInfo.ChangedProducts.Count -gt 0 -and $ChangeInfo.ChangedProducts.Contains($productKey)) {
+                        $TreeViewItem_Product.Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
+                        $TreeViewItem_Product.ToolTip = "Changed since: $($previousBackup.Name)"
+                        $productNodeHasChanges = $true
+                    }
+
                     $TreeViewItem_ProductNode.Items.Add($TreeViewItem_Product)
+                }
+
+                if ($productNodeHasChanges) {
+                    $TreeViewItem_ProductNode.Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
+                    $TreeViewItem_ProductNode.ToolTip = "Contains changes since: $($previousBackup.Name)"
                 }
 
                 $TreeViewItem_Tenant.Items.Add($TreeViewItem_ProductNode)

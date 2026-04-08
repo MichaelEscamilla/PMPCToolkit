@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.19'
+    ModuleVersion        = '0.0.20'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
