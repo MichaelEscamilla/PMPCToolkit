@@ -1,4 +1,4 @@
-function Search-StringInFiles {
+function Search-PMPCStringInFiles {
     <#
     .SYNOPSIS
         Searches for a string pattern across files in a directory.

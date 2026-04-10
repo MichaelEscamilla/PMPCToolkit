@@ -35,7 +35,7 @@
         'Remove-PMPCCatalogLicenseKey'
         'Invoke-PMPCBackupSettingsExtract'
         'Get-PMPCHashFromDigest'
-        'Search-StringInFiles'
+        'Search-PMPCStringInFiles'
         'Get-PMPCStringFromBase64'
         'Get-PMPCAppWorkloadPolicies'
         'Get-PMPCSelfUpdaterRegistryEntries'

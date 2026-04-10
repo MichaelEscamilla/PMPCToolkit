@@ -453,6 +453,12 @@ function Update-TreeView {
                     $TreeViewItem_ProductNode.Items.Add($TreeViewItem_Product)
                 }
 
+                # Also check if any removed products (present in previous, missing in current) belong to this node
+                if (-not $productNodeHasChanges -and $ChangeInfo.ChangedProducts.Count -gt 0) {
+                    $nodePrefix = "$($Tenant.Name)|$($ProductNode.Name)|"
+                    $productNodeHasChanges = [bool]($ChangeInfo.ChangedProducts | Where-Object { $_.StartsWith($nodePrefix) })
+                }
+
                 if ($productNodeHasChanges) {
                     $TreeViewItem_ProductNode.Background = [System.Windows.Media.Brushes]::LightGoldenrodYellow
                     $TreeViewItem_ProductNode.ToolTip = "Contains changes since: $($previousBackup.Name)"
