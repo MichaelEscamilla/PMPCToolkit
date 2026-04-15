@@ -7,42 +7,34 @@ function Get-WhatAdobeAcrobatTrashIHaveInstalled {
 		[string[]]$Path
 	)
 
-	process {
-		Import-PMPCInstalledSoftwareCsv -Path $Path |
-			Where-Object {
-				$DisplayName = if ($_.PSObject.Properties.Match('DisplayName').Count -gt 0) { $_.DisplayName } else { $_.Displayname }
-				$DisplayName -match 'Adobe Acrobat'
-			} |
-			Select-Object @{
-				Name = 'Displayname'
-				Expression = {
-					if ($_.PSObject.Properties.Match('Displayname').Count -gt 0) {
-						$_.Displayname
-					}
-					else {
-						$_.DisplayName
-					}
-				}
-			}, @{
-				Name = 'Displayversion'
-				Expression = {
-					if ($_.PSObject.Properties.Match('Displayversion').Count -gt 0) {
-						$_.Displayversion
-					}
-					else {
-						$_.DisplayVersion
-					}
-				}
-			}, @{
-				Name = 'RegistryKey'
-				Expression = {
-					if ($_.PSObject.Properties.Match('RegistryKey').Count -gt 0) {
-						$_.RegistryKey
-					}
-					else {
-						$_.Registrykey
-					}
+	foreach ($FilePath in $Path) {
+		Write-Host "Processing file: $FilePath" -ForegroundColor Cyan
+		$InstSoftCSVAdobe = $null
+		$InstSoftCSVAdobe = Import-PMPCInstalledSoftwareCsv -Path $FilePath |
+		Where-Object {
+			$DisplayName = if ($_.PSObject.Properties.Match('DisplayName').Count -gt 0) { $_.DisplayName } else { $_.Displayname }
+			$DisplayName -match 'Adobe Acrobat'
+		}
+
+		if ($InstSoftCSVAdobe) {
+			Write-Host "Found in CSV: Adobe Acrobat Software: " -NoNewline -ForegroundColor Red
+			Write-Host ""
+			Write-Host "$($InstSoftCSVAdobe | Select-Object DisplayName, DisplayVersion, RegistryKey | Out-String)" -ForegroundColor Red
+
+			# Compare the RegistryKey value again the Json AdobeAcrobat.json in the Private folder
+			$AdobeAcrobatMSP = Get-Content -Path "$($MyInvocation.MyCommand.Module.ModuleBase)\Private\AdobeAcrobat.json" | ConvertFrom-Json
+
+			foreach ($software in $InstSoftCSVAdobe) {
+				$matchingEntry = $AdobeAcrobatMSP | Where-Object { $_.TargetProductCode -match "$($software.RegistryKey)" }
+
+				if ($matchingEntry) {
+					Write-Host "Match found for $($software.DisplayName) with RegistryKey: $($software.RegistryKey)" -ForegroundColor Green
+					$matchingEntry | Select-Object Title, TargetProductCode | Format-Table
 				}
 			}
+		}
+		else {
+			Write-Host "No Adobe Acrobat software found in CSV: $FilePath" -ForegroundColor Yellow
+		}
 	}
 }
