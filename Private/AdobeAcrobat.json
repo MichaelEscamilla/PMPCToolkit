@@ -1,0 +1,544 @@
+[
+  {
+    "Title": "Adobe Acrobat 2020 Classic 20.005.30838 (MSP-x86)",
+    "InstallableItem": {
+      "ID": "275b5176-ded3-40a5-a5ef-677d1baa082f",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a440-0e1405787600}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "Acrobat2020Upd2000530838.msp"
+      },
+      "OriginFile": {
+        "FileName": "Acrobat2020Upd2000530838.msp",
+        "Size": 216375296,
+        "Modified": "2025-12-09T01:45:53.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/Acrobat2020/2000530838/Acrobat2020Upd2000530838.msp",
+        "Digest": "usT5AlAsgL56irFGmO7Qm2lrO4c=",
+        "SHA256": "SzSS4VvUYuWsVya5nRTAtA36BzqmcP0WPkhMvRHsUfw="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat Reader 2020 Classic 20.005.30838 (MSP-x86 MUI)",
+    "InstallableItem": {
+      "ID": "ca959027-8549-459a-b864-901c1265a75a",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-7ad7-ffff-2550-ae1405787600}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcroRdr2020Upd2000530838_MUI.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcroRdr2020Upd2000530838_MUI.msp",
+        "Size": 60428288,
+        "Modified": "2025-12-09T01:46:04.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/Acrobat2020/2000530838/AcroRdr2020Upd2000530838_MUI.msp",
+        "Digest": "79MxRIPxfxowBvwqZMIIXQpeK3s=",
+        "SHA256": "mI55OnmAHqLH8RJsAppRQluLZ0an+5/3iS1V2/1hdkA="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat Reader 2020 Classic 20.001.30002 (EXE-x86 MUI)",
+    "InstallableItem": {
+      "ID": "420f8ed7-df46-4987-a525-f5ac7712be3e",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "AcroRdr20202000130002_MUI.exe",
+        "Arguments": "/sALL /rs /MSI /qn /norestart ALLUSERS=1 EULA_ACCEPT=YES DISABLE_ARM_SERVICE_INSTALL=1 UPDATE_MODE=0",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "AcroRdr20202000130002_MUI.exe",
+        "Size": 235107376,
+        "Modified": "2020-05-31T23:33:48.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/Acrobat2020/2000130002/AcroRdr20202000130002_MUI.exe",
+        "Digest": "Ow9Y4ztyUgbcLD5DWzEwasC2uWY=",
+        "SHA256": "cvJd6fFHfxBbgGppfi0gY4ufpymygAkrrkgM2e9RlJY="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat Reader 26.001.21431 (EXE-x86 MUI)",
+    "InstallableItem": {
+      "ID": "8c0becf8-87da-4257-9443-b13571177ad5",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "AcroRdrDC2600121431_MUI.exe",
+        "Arguments": "/sALL /rs /MSI /qn /norestart ALLUSERS=1 EULA_ACCEPT=YES DISABLE_ARM_SERVICE_INSTALL=1 UPDATE_MODE=0",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDC2600121431_MUI.exe",
+        "Size": 713730008,
+        "Modified": "2026-04-13T09:36:28.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/AcrobatDC/2600121431/AcroRdrDC2600121431_MUI.exe",
+        "Digest": "4trYJmMEEmRCgLzF8W8a2gYRfWw=",
+        "SHA256": "5VTJH6uf5ltnjuaJNEse5kpE0HYT9D8xwCngReRrXG8="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat Reader 26.001.21431 (EXE-x86 en-US)",
+    "InstallableItem": {
+      "ID": "1932941a-74c8-4aea-86ca-41b64e8cf90f",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "AcroRdrDC2600121431_en_US.exe",
+        "Arguments": "/sALL /rs /MSI /qn /norestart ALLUSERS=1 EULA_ACCEPT=YES DISABLE_ARM_SERVICE_INSTALL=1 UPDATE_MODE=0",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDC2600121431_en_US.exe",
+        "Size": 613640152,
+        "Modified": "2026-04-13T09:36:42.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/AcrobatDC/2600121431/AcroRdrDC2600121431_en_US.exe",
+        "Digest": "GjIUl+loa/9++fGojVIs2EmajYs=",
+        "SHA256": "uB3Egj/uC2xMmAfqoEshsk/ZglHPFWliSnwUZuLzyVo="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat Reader 26.001.21431 (EXE-x64 MUI)",
+    "InstallableItem": {
+      "ID": "b11f29eb-3576-4c73-9cd9-c2c0903c7c47",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "AcroRdrDCx642600121431_MUI.exe",
+        "Arguments": "/sALL /rs /MSI /qn /norestart ALLUSERS=1 EULA_ACCEPT=YES UPDATE_MODE=0",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCx642600121431_MUI.exe",
+        "Size": 815144408,
+        "Modified": "2026-04-13T09:33:11.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcroRdrDCx642600121431_MUI.exe",
+        "Digest": "OgNyFzPGtLpHP5d+TW5beJrqiiw=",
+        "SHA256": "wycKvoqBalD/4nWIjSF9oomZftpn3r1JfebbOU1gGRc="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat Reader 26.001.21431 (EXE-x64 en-US)",
+    "InstallableItem": {
+      "ID": "8e12e506-709d-4938-a509-703055cad6fc",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "AcroRdrDCx642600121431_en_US.exe",
+        "Arguments": "/sALL /rs /MSI /qn /norestart ALLUSERS=1 EULA_ACCEPT=YES UPDATE_MODE=0",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCx642600121431_en_US.exe",
+        "Size": 738812376,
+        "Modified": "2026-04-13T09:33:02.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcroRdrDCx642600121431_en_US.exe",
+        "Digest": "pM7qK45sFevEuzPiaDYIlsGwe10=",
+        "SHA256": "VzpIa4TMlBmZt0KKGel0X0Qg3KsxdKXfio0SiF4YM/g="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat Reader 26.001.21431 (MSP-x86 MUI)",
+    "InstallableItem": {
+      "ID": "4633884f-6a12-4a0e-92f9-e697a6d3d31a",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-7ad7-ffff-2550-ac1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcroRdrDCUpd2600121431_MUI.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCUpd2600121431_MUI.msp",
+        "Size": 561393664,
+        "Modified": "2026-04-13T11:40:50.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/AcrobatDC/2600121431/AcroRdrDCUpd2600121431_MUI.msp",
+        "Digest": "eNzzY45M6XWxIwyjxF5QUTl2ytY=",
+        "SHA256": "zfiGItJlG/R4trfED7f1oBZmJqL6HGIWphbEuhMpIuI="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat Reader 26.001.21431 (MSP-x86 en-US)",
+    "InstallableItem": {
+      "ID": "ddba2a3c-e947-4013-93b7-a027b3877fde",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-7ad7-0000-2550-ac1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcroRdrDCUpd2600121431.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCUpd2600121431.msp",
+        "Size": 707997696,
+        "Modified": "2026-04-13T11:40:44.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/reader/win/AcrobatDC/2600121431/AcroRdrDCUpd2600121431.msp",
+        "Digest": "og6qcB/hyf2cwBktyJlrM+rC77c=",
+        "SHA256": "pJTv6IuNMaiUhKCtPQA4jrtzG6/RWIAp9phpZGPX6WA="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat Reader 26.001.21431 (MSP-x64 MUI)",
+    "InstallableItem": {
+      "ID": "abed440f-3e39-4bba-9de4-2e52519738cb",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a443-bc1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcroRdrDCx64Upd2600121431_MUI.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCx64Upd2600121431_MUI.msp",
+        "Size": 587018240,
+        "Modified": "2026-04-13T11:39:30.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcroRdrDCx64Upd2600121431_MUI.msp",
+        "Digest": "S5K/K4AYV4lljvx6L7pPVVZVwOs=",
+        "SHA256": "oyvK72g0Ey+KzOv7tWhcB2jzKx/j1Cibigl71B4MEvI="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat 26.001.21431 (EXE-x86 MUI)",
+    "InstallableItem": {
+      "ID": "2114bc76-3ff4-410e-8935-4c59d79c0e5a",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "Adobe Acrobat\\Setup.exe",
+        "Arguments": "/sAll /rs",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "Acrobat_DC_Web_WWMUI.zip",
+        "Size": 1537187961,
+        "Modified": "2026-04-14T07:55:53.000Z",
+        "OriginUri": "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_WWMUI.zip",
+        "Digest": "6g7KKzw/YniU7Q9O+gRXy87hcSk=",
+        "SHA256": "zI8BcVE8kC0Xa8osjAulksYH9m/HseqkGdg6AOaD1is="
+      }
+    }
+  },
+  {
+    "Title": "BaseInstallOnlyNotForUpdating_Adobe Acrobat 26.001.21431 (EXE-x64 MUI)",
+    "InstallableItem": {
+      "ID": "f6c6766a-0f93-4e6e-ac9f-cb0a1b4565ab",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "CommandLine",
+        "Program": "Adobe Acrobat\\setup.exe",
+        "Arguments": "/sAll /rs",
+        "DefaultResult": "Failed",
+        "RebootByDefault": "false",
+        "ReturnCodes": [
+          {
+            "Code": "1641",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          },
+          {
+            "Code": "0",
+            "Result": "Succeeded",
+            "Reboot": "false"
+          },
+          {
+            "Code": "3010",
+            "Result": "Succeeded",
+            "Reboot": "true"
+          }
+        ]
+      },
+      "OriginFile": {
+        "FileName": "Acrobat_DC_Web_x64_WWMUI.zip",
+        "Size": 1623185949,
+        "Modified": "2026-04-14T07:55:24.000Z",
+        "OriginUri": "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_x64_WWMUI.zip",
+        "Digest": "JeBtIgaPAKgW5TCvQS9giaITQaE=",
+        "SHA256": "6T4b75nYjXIvbnjlbZ3hfo6hsfx10F8QVYOXlAEMDuU="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat Reader 26.001.21431 (MSP-x64 en-US)",
+    "InstallableItem": {
+      "ID": "43a03aca-efd7-4c00-bb68-2c39f078e555",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a442-bc1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcroRdrDCx64Upd2600121431.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcroRdrDCx64Upd2600121431.msp",
+        "Size": 734793728,
+        "Modified": "2026-04-13T11:39:43.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcroRdrDCx64Upd2600121431.msp",
+        "Digest": "TFctqDxo2TdUAGu9trd7zX74f04=",
+        "SHA256": "nzD4JE0EBTpePTAc8COXBpgDA5LveGPddjjkS/Gd3R4="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat 26.001.21431 (MSP-x86 MUI)",
+    "InstallableItem": {
+      "ID": "bdbd1041-f840-46c8-9c30-3842820b2613",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a440-0c1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcrobatDCUpd2600121431.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcrobatDCUpd2600121431.msp",
+        "Size": 978763776,
+        "Modified": "2026-04-13T11:40:02.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcrobatDCUpd2600121431.msp",
+        "Digest": "MJzAyBtUxoVfoG1GlpPIvRfIzfg=",
+        "SHA256": "nQyLzZ6gsP1JCmunElsilWzpcJoYVwWonnJjLktdFkE="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat 26.001.21431 (MSP-x64 MUI)",
+    "InstallableItem": {
+      "ID": "90660612-0705-4517-afe9-8c98f56abeef",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a441-bc1a0153b700}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcrobatDCx64Upd2600121431.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcrobatDCx64Upd2600121431.msp",
+        "Size": 879706112,
+        "Modified": "2026-04-13T11:39:24.000Z",
+        "OriginUri": "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121431/AcrobatDCx64Upd2600121431.msp",
+        "Digest": "fJ1Lvcy6z+RfFOLHXc0DsIflzIc=",
+        "SHA256": "skRhqrI+l6dRalOWlOZeasp5k9rlcKbnMFj9KhPYBZc="
+      }
+    }
+  },
+  {
+    "Title": "Adobe Acrobat 2024 24.001.30365 (MSP-x64)",
+    "InstallableItem": {
+      "ID": "97cd3f9a-a824-4205-bebb-dbdb19f7b5f7",
+      "InstallProperties": {
+        "CanRequestUserInput": "false",
+        "RequiresNetworkConnectivity": "false",
+        "Impact": "Normal",
+        "RebootBehavior": "CanRequestReboot"
+      },
+      "Installer": {
+        "Type": "MspPatch",
+        "FullFilePatchCode": "{ac76ba86-a440-ffff-a441-be1801769d00}",
+        "CommandLine": "ALLUSERS=1 REBOOT=ReallySuppress",
+        "MspFileName": "AcrobatClassicx64Upd2400130365.msp"
+      },
+      "OriginFile": {
+        "FileName": "AcrobatClassicx64Upd2400130365.msp",
+        "Size": 626233344,
+        "Modified": "2026-04-14T09:25:10.000Z",
+        "OriginUri": "https://ardownload3.adobe.com/pub/adobe/acrobat/win/AcrobatClassic/2400130365/AcrobatClassicx64Upd2400130365.msp",
+        "Digest": "n6iefSI9fqW90W1WIcPxTUi286Y=",
+        "SHA256": "E/qicPdD7nJFyIFoBocfwcAUAB+8TZ8Xop8JAheMVEg="
+      }
+    }
+  }
+]
