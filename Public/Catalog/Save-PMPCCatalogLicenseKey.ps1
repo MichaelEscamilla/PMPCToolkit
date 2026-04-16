@@ -32,5 +32,5 @@ function Save-PMPCCatalogLicenseKey {
 
     # Save the license key file as an Envionment Variable for the current user
     [System.Environment]::SetEnvironmentVariable("PMPCCatalogLicenseKey", $LicenseKey, [System.EnvironmentVariableTarget]::User)
-    Write-Host -ForegroundColor Green "License key saved successfully for the current user."
+    Write-Host -ForegroundColor Green "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] License key saved successfully for the current user."
 }

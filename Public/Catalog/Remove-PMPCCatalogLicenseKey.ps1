@@ -17,4 +17,5 @@ function Remove-PMPCCatalogLicenseKey {
     )
     # Delete the license key from the Environment Variable for the current user
     [System.Environment]::SetEnvironmentVariable("PMPCCatalogLicenseKey", $null, [System.EnvironmentVariableTarget]::User)
+    Write-Host -ForegroundColor Green "[$(Get-Date -format G)] [$($MyInvocation.MyCommand.Name)] License key successfully removed for the current user."
 }
