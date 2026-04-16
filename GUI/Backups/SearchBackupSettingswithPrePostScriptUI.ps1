@@ -7,6 +7,9 @@ Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 
+#TODO: Modify the PMPC tab so that the Pre-Script section has a checkbox for 'Disable the Patch My PC recommended pre-update script for this product'
+#TODO: Modify the PMPC Tab so that the Post-Script section has a checkbox for 'Disable the Patch My PC recommended post-update script for this product'
+#TODO: Add Filter logic to show what products and productnodes have changed from the previous backup
 [xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

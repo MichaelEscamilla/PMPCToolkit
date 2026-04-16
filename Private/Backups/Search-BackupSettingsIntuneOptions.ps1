@@ -13,6 +13,7 @@ function Search-BackupSettingsIntuneOptions {
     # Load the XML content from the file "Settings.xml"
     [xml]$xmlContent = Get-Content -Path $SettingsFilePath
 
+    #TODO: Refactor to handle multiple tenants. Check Intune Assignments for Inspiration
     # Get the Intune Tenant Node
     $TenantNode = $xmlContent.SelectSingleNode("//IntuneTenants//Tenant");
 
