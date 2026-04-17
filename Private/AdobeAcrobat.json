@@ -1,7 +1,9 @@
 [
   {
-    "Title": "Adobe Acrobat 2020 Classic (x86)",
-    "TargetProductCode": "{AC76BA86-1033-FFFF-7760-0E1401753200}",
+    "Title": "Adobe Acrobat 2020 Classic (MSP-x86)",
+    "TargetProductCode": [
+      "{AC76BA86-1033-FFFF-7760-0E1401753200}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-A440-FFFF-A440-0E1401753500}",
       "{AC76BA86-A440-FFFF-A440-0E1401753A00}",
@@ -36,8 +38,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat Reader 2020 Classic (x86 MUI)",
-    "TargetProductCode": "{AC76BA86-7AD7-FFFF-7B44-AE1401753200}",
+    "Title": "Adobe Acrobat Reader 2020 Classic (MSP-x86 MUI)",
+    "TargetProductCode": [
+      "{AC76BA86-7AD7-FFFF-7B44-AE1401753200}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-7AD7-FFFF-2550-AE1401753500}",
       "{AC76BA86-7AD7-FFFF-2550-AE1401753A00}",
@@ -72,8 +76,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat Reader (x86 MUI)",
-    "TargetProductCode": "{AC76BA86-7AD7-FFFF-7B44-AC0F074E4100}",
+    "Title": "Adobe Acrobat Reader (MSP-x86 MUI)",
+    "TargetProductCode": [
+      "{AC76BA86-7AD7-FFFF-7B44-AC0F074E4100}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-7AD7-FFFF-2550-AC0F084E7200}",
       "{AC76BA86-7AD7-FFFF-2550-AC0F094E6500}",
@@ -226,8 +232,36 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat Reader (x86 en-US)",
-    "TargetProductCode": "{AC76BA86-7AD7-1041-7B44-AC0F074E4100}",
+    "Title": "Adobe Acrobat Reader (MSP-x86 en-US)",
+    "TargetProductCode": [
+      "{AC76BA86-7AD7-1041-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1030-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-2052-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1034-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1035-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1040-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1031-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1043-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1053-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1042-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1049-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1028-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1046-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1044-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1036-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1058-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1055-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1060-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1051-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1038-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1029-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1048-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1045-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1050-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1069-7B44-AC0F074E4100}",
+      "{AC76BA86-7AD7-1027-7B44-AC0F074E4100}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-7AD7-0000-2550-AC0F084E7200}",
       "{AC76BA86-7AD7-0000-2550-AC0F094E6500}",
@@ -380,8 +414,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat Reader (x64 MUI)",
-    "TargetProductCode": "{AC76BA86-1033-FF00-7760-BC15014EA700}",
+    "Title": "Adobe Acrobat Reader (MSP-x64 MUI)",
+    "TargetProductCode": [
+      "{AC76BA86-1033-FF00-7760-BC15014EA700}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-A440-FFFF-A443-BC15014EAA00}",
       "{AC76BA86-A440-FFFF-A443-BC15014EB100}",
@@ -468,8 +504,32 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat Reader (x64 en-US)",
-    "TargetProductCode": "{AC76BA86-1058-1033-7760-BC15014EA700}",
+    "Title": "Adobe Acrobat Reader (MSP-x64 en-US)",
+    "TargetProductCode": [
+      "{AC76BA86-1058-1033-7760-BC15014EA700}",
+      "{AC76BA86-1046-1033-7760-BC15014EA700}",
+      "{AC76BA86-1041-1033-7760-BC15014EA700}",
+      "{AC76BA86-1030-1033-7760-BC15014EA700}",
+      "{AC76BA86-2052-1033-7760-BC15014EA700}",
+      "{AC76BA86-1034-1033-7760-BC15014EA700}",
+      "{AC76BA86-1035-1033-7760-BC15014EA700}",
+      "{AC76BA86-1040-1033-7760-BC15014EA700}",
+      "{AC76BA86-1031-1033-7760-BC15014EA700}",
+      "{AC76BA86-1043-1033-7760-BC15014EA700}",
+      "{AC76BA86-1045-1033-7760-BC15014EA700}",
+      "{AC76BA86-1053-1033-7760-BC15014EA700}",
+      "{AC76BA86-1042-1033-7760-BC15014EA700}",
+      "{AC76BA86-1049-1033-7760-BC15014EA700}",
+      "{AC76BA86-1028-1033-7760-BC15014EA700}",
+      "{AC76BA86-1055-1033-7760-BC15014EA700}",
+      "{AC76BA86-1036-1033-7760-BC15014EA700}",
+      "{AC76BA86-1060-1033-7760-BC15014EA700}",
+      "{AC76BA86-1038-1033-7760-BC15014EA700}",
+      "{AC76BA86-1033-1033-7760-BC15014EA700}",
+      "{AC76BA86-1029-1033-7760-BC15014EA700}",
+      "{AC76BA86-1044-1033-7760-BC15014EA700}",
+      "{AC76BA86-1051-1033-7760-BC15014EA700}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-A440-FFFF-A442-BC15014EAA00}",
       "{AC76BA86-A440-FFFF-A442-BC15014EB100}",
@@ -556,8 +616,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat (x86 MUI)",
-    "TargetProductCode": "{AC76BA86-1033-FFFF-7760-0C0F074E4100}",
+    "Title": "Adobe Acrobat (MSP-x86 MUI)",
+    "TargetProductCode": [
+      "{AC76BA86-1033-FFFF-7760-0C0F074E4100}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-A440-FFFF-A440-0C0F084E7200}",
       "{AC76BA86-A440-FFFF-A440-0C0F094E6500}",
@@ -710,8 +772,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat (x64 MUI)",
-    "TargetProductCode": "{AC76BA86-1033-FFFF-7760-BC15014EA700}",
+    "Title": "Adobe Acrobat (MSP-x64 MUI)",
+    "TargetProductCode": [
+      "{AC76BA86-1033-FFFF-7760-BC15014EA700}"
+    ],
     "ObsoletedPatches": [
       "{AC76BA86-A440-FFFF-A441-BC15014EAA00}",
       "{AC76BA86-A440-FFFF-A441-BC15014EB100}",
@@ -798,8 +862,10 @@
     ]
   },
   {
-    "Title": "Adobe Acrobat 2024 (x64)",
-    "TargetProductCode": "{AC76BA86-1033-FFFF-7760-BE180175AB00}",
+    "Title": "Adobe Acrobat 2024 (MSP-x64)",
+    "TargetProductCode": [
+      "{AC76BA86-1033-FFFF-7760-BE180175AB00}"
+    ],
     "ObsoletedPatches": []
   }
 ]
