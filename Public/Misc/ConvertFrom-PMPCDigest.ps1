@@ -1,5 +1,26 @@
-# From Jordan Benzing
-function Get-PMPCHashFromDigest {
+<#
+.SYNOPSIS
+    Converts a Base64-encoded digest string into a hexadecimal hash string.
+
+.DESCRIPTION
+    Takes a Base64-encoded digest value and converts it to its hexadecimal SHA1 hash representation.
+    Supports both PowerShell 7+ (using [convert]::ToHexString) and Windows PowerShell 5.1 (using Format-Hex).
+    Original concept from Jordan Benzing.
+
+.PARAMETER Digest
+    The Base64-encoded digest string to convert. Accepts pipeline input.
+
+.EXAMPLE
+    ConvertFrom-PMPCDigest -Digest 'dGVzdA=='
+
+    Converts the Base64 digest string to its hexadecimal hash representation.
+
+.EXAMPLE
+    'dGVzdA==' | ConvertFrom-PMPCDigest
+
+    Converts the Base64 digest string via pipeline input.
+#>
+function ConvertFrom-PMPCDigest {
     [cmdletbinding()]
     param(
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]

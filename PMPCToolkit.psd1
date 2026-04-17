@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.20'
+    ModuleVersion        = '0.0.21'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -28,17 +28,13 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @(
-        'Get-PMPCRunAs32On64'
-        'Get-PMPCSupportedProducts'
         'Get-PMPCCatalog'
         'Save-PMPCCatalogLicenseKey'
         'Remove-PMPCCatalogLicenseKey'
-        'Invoke-PMPCBackupSettingsExtract'
-        'Get-PMPCHashFromDigest'
-        'Search-PMPCStringInFiles'
-        'Get-PMPCStringFromBase64'
-        'Get-PMPCAppWorkloadPolicies'
+        'Get-PMPCSupportedProducts'
+        'Get-PMPCRunAs32On64'
         'Get-PMPCSelfUpdaterRegistryEntries'
+        'Invoke-PMPCBackupSettingsExtract'
         'Get-PMPCBackupSettings'
         'Get-PMPCBackupSettingsPrePostScripts'
         'Get-PMPCBackupSettingsIntuneOptions'
@@ -47,8 +43,13 @@
         'Get-PMPCBackupSettingsAutoPubIntune'
         'Get-PMPCBackupSettingsAutoPubConfigMgr'
         'Get-PMPCBackupSettingsSMSProvider'
-        'Get-PMPCSPPrePostScripts'
+        'ConvertFrom-PMPCDigest'
+        'ConvertTo-PMPCDigest'
+        'Search-PMPCStringInFiles'
+        'ConvertFrom-PMPCBase64'
+        'Get-PMPCAppWorkloadPolicies'
         'Get-PMPCConfMgrWorkloads'
+        'Get-WhatAdobeAcrobatTrashIHaveInstalled'
     )
 
     PrivateData          = @{

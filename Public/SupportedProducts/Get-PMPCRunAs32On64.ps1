@@ -13,7 +13,7 @@ function Get-PMPCRunAs32On64 {
     )
 
     # Get the Latest SupportedProducts.xml
-    Get-SupportedProducts -NoExplorer
+    Get-PMPCSupportedProducts -NoExplorer
 
     # Get Cache Folder
     $SupportedProductsFolder = Get-SupportedProductsPath
