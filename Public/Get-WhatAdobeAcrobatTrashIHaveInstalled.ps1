@@ -24,12 +24,23 @@ function Get-WhatAdobeAcrobatTrashIHaveInstalled {
 			# Compare the RegistryKey value again the Json AdobeAcrobat.json in the Private folder
 			$AdobeAcrobatMSP = Get-Content -Path "$($MyInvocation.MyCommand.Module.ModuleBase)\Private\AdobeAcrobat.json" | ConvertFrom-Json
 
+			$matchingEntry = $null
 			foreach ($software in $InstSoftCSVAdobe) {
-				$matchingEntry = $AdobeAcrobatMSP | Where-Object { $_.TargetProductCode -match "$($software.RegistryKey)" }
+				foreach ($ProductCode in $AdobeAcrobatMSP.TargetProductCode) {
 
+					if ($software.RegistryKey -match $ProductCode) {
+						$matchingEntry = $AdobeAcrobatMSP | Where-Object { $_.TargetProductCode -match "$($software.RegistryKey)" } | Select-Object Title, TargetProductCode | Format-Table
+					}
+					$matchingEntry = $AdobeAcrobatMSP | Where-Object { $_.TargetProductCode -match "$($software.RegistryKey)" }
+				}
 				if ($matchingEntry) {
 					Write-Host "Match found for $($software.DisplayName) with RegistryKey: $($software.RegistryKey)" -ForegroundColor Green
-					$matchingEntry | Select-Object Title, TargetProductCode | Format-Table
+					#$matchingEntry | Select-Object Title, @{Name='TargetProductCode';Expression={$_.TargetProductCode | Where-Object { $_ -match $software.RegistryKey }}} | Format-Table
+					[PSCustomObject]@{
+						Title = $matchingEntry.Title
+						MatchedProductCode = ($matchingEntry.TargetProductCode | Where-Object { $_ -match $software.RegistryKey })
+						TargetProductCode = $matchingEntry.TargetProductCode
+					}
 				}
 			}
 		}
