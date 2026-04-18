@@ -28,6 +28,7 @@ function ConvertFrom-PMPCBase64 {
     try {
         $Bytes = [Convert]::FromBase64String($Base64String)
         $DecodedString = [System.Text.Encoding]::UTF8.GetString($Bytes)
+        Set-Clipboard -Value $DecodedString
         return $DecodedString
     }
     catch {

@@ -1,4 +1,42 @@
-Function Get-PMPCConfMgrWorkloads {
+<#
+.SYNOPSIS
+    Evaluates ConfigMgr co-management workload capability values and returns the associated workload names.
+
+.DESCRIPTION
+    Converts one or more integer capability values from ConfigMgr co-management into human-readable workload names.
+    Uses a flags-based enumeration to decode which workloads are offloaded to Intune based on the capability number.
+    Supports ConfigMgr 2111 and later.
+
+.PARAMETER capability
+    One or more integer capability values to evaluate. Valid range is 1 to 12543.
+    A value of 1 indicates co-management is disabled.
+    A value of 8193 indicates co-management is enabled with no workloads offloaded.
+    Values greater than 8193 represent specific workloads offloaded to Intune.
+
+.OUTPUTS
+    System.Collections.Specialized.OrderedDictionary
+    Returns an ordered hashtable where each key is the input capability number (as a string)
+    and each value is an array of matching workload name strings.
+
+.EXAMPLE
+    Get-PMPCConfigMgrWorkloads -capability 8257
+
+    Returns the workloads offloaded to Intune for capability value 8257.
+
+.EXAMPLE
+    Get-PMPCConfigMgrWorkloads -capability 8193, 8257, 8321
+
+    Evaluates multiple capability values and returns an ordered hashtable with results for each.
+
+
+.NOTES
+    Workload flags are based on ConfigMgr 2111+.
+    CoMgmt_Enabled (8193) is filtered from results when other workloads are present, as its presence is implied.
+
+    ##### From MSEndpointMgr - Ben Whitmore ######
+    # https://msendpointmgr.com/2023/02/04/co-management-workloads-capabilities/
+#>
+Function Get-PMPCConfigMgrWorkloads {
        [CmdletBinding()]
     Param(
         [Parameter(Position = 0, Mandatory = $true)]

@@ -3,7 +3,7 @@
     RootModule           = 'PMPCToolkit.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.0.23'
+    ModuleVersion        = '0.0.24'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -48,8 +48,8 @@
         'Search-PMPCStringInFiles'
         'ConvertFrom-PMPCBase64'
         'Get-PMPCAppWorkloadPolicies'
-        'Get-PMPCConfMgrWorkloads'
-        'Get-WhatAdobeAcrobatTrashIHaveInstalled'
+        'Get-PMPCConfigMgrWorkloads'
+        'Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled'
     )
 
     PrivateData          = @{
