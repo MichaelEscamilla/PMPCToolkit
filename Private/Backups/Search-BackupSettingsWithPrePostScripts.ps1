@@ -33,76 +33,78 @@ function Search-BackupSettingsWithPrePostScripts {
 
         foreach ($SearchPattern in $productNode.Path.SearchPattern) {
             if (($SearchPattern.RecommendedPreScriptPath) -or ($SearchPattern.RecommendedPostScriptPath) `
-            -or ($SearchPattern.PreCommand) -or ($SearchPattern.PostCommand) `
-            -or ($SearchPattern.AdditionalFiles) -or ($SearchPattern.AdditionalFolders)) {
+                    -or ($SearchPattern.PreCommand) -or ($SearchPattern.PostCommand) `
+                    -or ($SearchPattern.AdditionalFiles) -or ($SearchPattern.AdditionalFolders)) {
                 $PrePostScriptInfo = @{
-                    PreScriptPMPC = @()
-                    PostScriptPMPC = @()
-                    PreScript = @()
-                    PostScript = @()
-                    PreCommandUninstall = @()
+                    PreScriptPMPC        = @()
+                    PostScriptPMPC       = @()
+                    PreScript            = @()
+                    PostScript           = @()
+                    PreCommandUninstall  = @()
                     PostCommandUninstall = @()
-                    AdditionalFiles = @()
-                    AdditionalFolders = @()
+                    AdditionalFiles      = @()
+                    AdditionalFolders    = @()
                 }
 
                 # Patch My PC Defined Pre Script
                 if (($SearchPattern.RecommendedPreScriptPath)) {
                     $PrePostScriptInfo.PreScriptPMPC += @{
-                        Type   = "PMPC Pre-Script"
-                        Path   = $($SearchPattern.SelectSingleNode("RecommendedPreScriptPath").InnerXml)
-                        Args   = $SearchPattern.RecommendedPreScriptArgument
-                        Abort  = $SearchPattern.RecommendedPreScriptAbortOnFail
-                        RBSK = $($SearchPattern.SelectSingleNode("RecommendedPreScriptPath").RunBeforeSkipOrKill)
+                        Type    = "PMPC Pre-Script"
+                        Path    = $($SearchPattern.SelectSingleNode("RecommendedPreScriptPath").InnerXml)
+                        Args    = $SearchPattern.RecommendedPreScriptArgument
+                        Abort   = $SearchPattern.RecommendedPreScriptAbortOnFail
+                        RBSK    = $($SearchPattern.SelectSingleNode("RecommendedPreScriptPath").RunBeforeSkipOrKill)
+                        Disable = $SearchPattern.RecommendedPreScriptDeclined
                     }
                 }
 
                 # Patch My PC Defined Post Script
                 if (($SearchPattern.RecommendedPostScriptPath)) {
                     $PrePostScriptInfo.PostScriptPMPC += @{
-                        Type   = "PMPC Post-Script"
-                        Path   = $($SearchPattern.SelectSingleNode("RecommendedPostScriptPath").InnerXml)
-                        Args   = $SearchPattern.RecommendedPostScriptArgument
+                        Type = "PMPC Post-Script"
+                        Path = $($SearchPattern.SelectSingleNode("RecommendedPostScriptPath").InnerXml)
+                        Args = $SearchPattern.RecommendedPostScriptArgument
+                        Disable = $SearchPattern.RecommendedPostScriptDeclined
                     }
                 }
 
                 # Pre Install Command
                 if (($SearchPattern.PreCommand)) {
                     $PrePostScriptInfo.PreScript += @{
-                        Type   = "Pre-Command"
-                        Path   = $($SearchPattern.SelectSingleNode("PreCommand").InnerXml)
-                        Args   = $SearchPattern.PreCommandArg
-                        Abort  = $SearchPattern.AbortOnPreScriptFail
-                        RBSK = $($SearchPattern.SelectSingleNode("PreCommand").RunBeforeSkipOrKill)
+                        Type  = "Pre-Command"
+                        Path  = $($SearchPattern.SelectSingleNode("PreCommand").InnerXml)
+                        Args  = $SearchPattern.PreCommandArg
+                        Abort = $SearchPattern.AbortOnPreScriptFail
+                        RBSK  = $($SearchPattern.SelectSingleNode("PreCommand").RunBeforeSkipOrKill)
                     }
                 }
 
                 # Post Install Command
                 if (($SearchPattern.PostCommand)) {
                     $PrePostScriptInfo.PostScript += @{
-                        Type   = "Post-Command"
-                        Path   = $($SearchPattern.SelectSingleNode("PostCommand").InnerXml)
-                        Args   = $SearchPattern.PostCommandArg
+                        Type = "Post-Command"
+                        Path = $($SearchPattern.SelectSingleNode("PostCommand").InnerXml)
+                        Args = $SearchPattern.PostCommandArg
                     }
                 }
 
                 # Pre Uninstall Command
                 if (($SearchPattern.PreCommandUninstall)) {
                     $PrePostScriptInfo.PreCommandUninstall += @{
-                        Type   = "Pre-Uninstall Command"
-                        Path   = $($SearchPattern.SelectSingleNode("PreCommandUninstall").InnerXml)
-                        Args   = $SearchPattern.PreCommandArgUninstall
-                        Abort  = $SearchPattern.AbortOnPreScriptFailUninstall
-                        RBSK = $($SearchPattern.SelectSingleNode("PreCommandUninstall").RunBeforeSkipOrKillUninstall)
+                        Type  = "Pre-Uninstall Command"
+                        Path  = $($SearchPattern.SelectSingleNode("PreCommandUninstall").InnerXml)
+                        Args  = $SearchPattern.PreCommandArgUninstall
+                        Abort = $SearchPattern.AbortOnPreScriptFailUninstall
+                        RBSK  = $($SearchPattern.SelectSingleNode("PreCommandUninstall").RunBeforeSkipOrKillUninstall)
                     }
                 }
 
                 # Post Uninstall Command
                 if (($SearchPattern.PostCommandUninstall)) {
                     $PrePostScriptInfo.PostCommandUninstall += @{
-                        Type   = "Post-Uninstall Command"
-                        Path   = $($SearchPattern.SelectSingleNode("PostCommandUninstall").InnerXml)
-                        Args   = $SearchPattern.PostCommandArgUninstall
+                        Type = "Post-Uninstall Command"
+                        Path = $($SearchPattern.SelectSingleNode("PostCommandUninstall").InnerXml)
+                        Args = $SearchPattern.PostCommandArgUninstall
                     }
                 }
 
@@ -125,7 +127,7 @@ function Search-BackupSettingsWithPrePostScripts {
                 }
 
                 $nodeData.Products += @{
-                    Product = $SearchPattern.product
+                    Product           = $SearchPattern.product
                     PrePostScriptInfo = $PrePostScriptInfo
                 }
             }

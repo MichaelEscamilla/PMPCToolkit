@@ -73,29 +73,29 @@ Add-Type -AssemblyName WindowsBase
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0"
-                           Width="18" Height="18"
-                        CornerRadius="9"
-                           BorderBrush="#D8ECFF" BorderThickness="1"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="?"
-                               Foreground="#EAF5FF"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-
+                <TextBlock Grid.Column="0"
+                        Text="?"
+                        Foreground="#EAF5FF"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0"
-                           Foreground="White"
-                           FontSize="12"
-                           Text="The specified scripts, files and folders are packaged with the application content."/>
-
-                <TextBlock Grid.Column="2" VerticalAlignment="Center">
-                    <Hyperlink Name="LnkMoreInfo" Foreground="#EAF5FF">(More Info)</Hyperlink>
-                </TextBlock>
+                        VerticalAlignment="Center"
+                        Margin="8,0,0,0"
+                        Foreground="White"
+                        FontSize="12"
+                        Text="The specified scripts, files and folders are packaged with the application content."/>
+                <Button Grid.Column="2"
+                        Name="BtnCloseBanner"
+                        Content="X"
+                        Width="22"
+                        Height="22"
+                        Padding="0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="#1976C9"
+                        Foreground="White"
+                        BorderBrush="#4D8DC9"/>
             </Grid>
         </Border>
 
@@ -228,10 +228,10 @@ Add-Type -AssemblyName WindowsBase
                                       Margin="0,1,0,1"
                                       Content="Don't attempt software update if the pre script returns an exit code other than 0 or 3010."/>
                             <CheckBox Grid.Row="7"
-                                      Name="PChkPreRunBefore"
+                                      Name="PChkPreDisablePMPC"
                                       IsChecked="False"
                                       Margin="0,1,0,1"
-                                      Content="Run the pre-update script before performing any auto-close or skip process checks."/>
+                                      Content="Disable the Patch My PC recommended pre-update script for this product."/>
 
                             <Border Grid.Row="9" BorderBrush="#CFCFCF" BorderThickness="0,1,0,0"/>
 
@@ -266,25 +266,11 @@ Add-Type -AssemblyName WindowsBase
                                 <TextBox Grid.Column="1" Name="PTxtPostArg"/>
                             </Grid>
 
-                            <!-- Post vars -->
-                            <Grid Grid.Row="15">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Insert Variable:"/>
-                                <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap">
-                                    <Hyperlink Name="PLnkPostVars">%VendorName%</Hyperlink>
-                                    <Run Text="   "/>
-                                    <Hyperlink Name="PLnkPostVars2">%ProductName%</Hyperlink>
-                                    <Run Text="   "/>
-                                    <Hyperlink Name="PLnkPostVars3">%Version%</Hyperlink>
-                                    <Run Text="   "/>
-                                    <Hyperlink Name="PLnkPostVars4">%PackageID%</Hyperlink>
-                                    <Run Text="   "/>
-                                    <Hyperlink Name="PLnkPostVars5">%ReturnCode%</Hyperlink>
-                                </TextBlock>
-                            </Grid>
+                            <CheckBox Grid.Row="15"
+                                      Name="PChkPostDisablePMPC"
+                                      IsChecked="False"
+                                      Margin="0,1,0,1"
+                                      Content="Disable the Patch My PC recommended post-update script for this product."/>
                         </Grid>
                     </GroupBox>
 
@@ -636,7 +622,7 @@ Add-Type -AssemblyName WindowsBase
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="108"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="1" Name="BtnOK" Content="Close" Height="24"/>
+                <Button Grid.Column="1" Name="BtnClose" Content="Close" Height="24"/>
             </Grid>
         </Grid>
     </Border>
@@ -842,8 +828,9 @@ function Clear-SelectedProductDetails {
     $PTxtPreArg.Text = ""
     $PTxtPostScript.Text = ""
     $PTxtPostArg.Text = ""
+    $PChkPostDisablePMPC.IsChecked = $false
     $PChkPreStopUpdate.IsChecked = $false
-    $PChkPreRunBefore.IsChecked = $false
+    $PChkPreDisablePMPC.IsChecked = $false
 
     $TxtPreScript.Text = ""
     $TxtPreArg.Text = ""
@@ -934,10 +921,11 @@ function Set-SelectedProductDetails {
     $PTxtPreScript.Text = "$($ProductData.PrePostScriptInfo.PreScriptPMPC.Path)"
     $PTxtPreArg.Text = "$($ProductData.PrePostScriptInfo.PreScriptPMPC.Args)"
     $PChkPreStopUpdate.IsChecked = $ProductData.PrePostScriptInfo.PreScriptPMPC.Abort -eq $true
-    $PChkPreRunBefore.IsChecked = $ProductData.PrePostScriptInfo.PreScriptPMPC.RBSK -eq $true
+    $PChkPreDisablePMPC.IsChecked = $ProductData.PrePostScriptInfo.PreScriptPMPC.Disabled -eq $true
 
     $PTxtPostScript.Text = "$($ProductData.PrePostScriptInfo.PostScriptPMPC.Path)"
     $PTxtPostArg.Text = "$($ProductData.PrePostScriptInfo.PostScriptPMPC.Args)"
+    $PChkPostDisablePMPC.IsChecked = $ProductData.PrePostScriptInfo.PostScriptPMPC.Disabled -eq $true
 
     $TxtPreScript.Text = "$($ProductData.PrePostScriptInfo.PreScript.Path)"
     $TxtPreArg.Text = "$($ProductData.PrePostScriptInfo.PreScript.Args)"
@@ -1021,18 +1009,14 @@ $BtnOpenFolder.Add_Click({
     })
 
 
-$topBanner.Add_MouseLeftButtonDown({
-        try {
-            $formProperties.DragMove()
-        }
-        catch {
-            # Ignore drag exceptions when mouse state is not valid.
-        }
-    })
-
-$btnOK.Add_Click({
-        $formProperties.DialogResult = $true
+$BtnCloseBanner.Add_Click({
         $formProperties.Close()
+    })
+$BtnClose.Add_Click({
+        $formProperties.Close()
+    })
+$TopBanner.Add_MouseLeftButtonDown({
+        $formProperties.DragMove()
     })
 
 $null = $formProperties.ShowDialog()

@@ -75,29 +75,28 @@ Add-Type -AssemblyName WindowsBase
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0"
-                            Width="18" Height="18"
-                            CornerRadius="9"
-                            BorderBrush="#D8ECFF" BorderThickness="1"
-                            VerticalAlignment="Center">
-                        <TextBlock Text="?"
-                                   Foreground="#EAF5FF"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
-
+                    <TextBlock Grid.Column="0" Text="?"
+                            Foreground="#EAF5FF"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
                     <TextBlock Grid.Column="1"
-                               VerticalAlignment="Center"
-                               Margin="8,0,0,0"
-                               Foreground="White"
-                               FontSize="12"
-                               Text="Intune Options Backup Viewer — Review Intune tenant configuration from Publisher backup files."/>
-
-                    <TextBlock Grid.Column="2" VerticalAlignment="Center">
-                        <Hyperlink Name="LnkMoreInfo" Foreground="#EAF5FF">(More Info)</Hyperlink>
-                    </TextBlock>
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0"
+                            Foreground="White"
+                            FontSize="12"
+                            Text="Intune Options Backup Viewer — Review Intune tenant configuration from Publisher backup files."/>
+                    <Button Grid.Column="2"
+                            Name="BtnCloseBanner"
+                            Content="X"
+                            Width="22"
+                            Height="22"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Background="#1976C9"
+                            Foreground="White"
+                            BorderBrush="#4D8DC9"/>
                 </Grid>
             </Border>
 
@@ -443,36 +442,44 @@ function Update-IntuneTreeView {
 
     $previousBackup = $null
 
-    $ObjectData | ForEach-Object {
-        # Create a TreeViewItem Object and set the header to the backup folder name
-        $TreeViewItem_Folder = New-Object System.Windows.Controls.TreeViewItem
-        $TreeViewItem_Folder.Header = "$($_.Name)"
-        $TreeViewItem_Folder.Tag = $_
-
+    foreach ($Object in $ObjectData) {
+        # Create a TreeViewItem for the Backup Folder
+        $TreeViewItem_Backup = New-Object System.Windows.Controls.TreeViewItem
+        $TreeViewItem_Backup.Header = $Object.Name
+        $TreeViewItem_Backup.Tag = @{
+            Level    = "BackupFolder"
+            Name     = $Object.Name
+            FullName = $Object.FullName
+            Backup   = $Object
+        }
         # Check for Changes
-        $ChangeInfo = Get-TenantChangeInfo -CurrentItems @($_.Tenants) -PreviousItems $(if ($previousBackup) { @($previousBackup.Tenants) } else { $null })
+        $ChangeInfo = Get-TenantChangeInfo -CurrentItems @($Object.Tenants) -PreviousItems $(if ($previousBackup) { @($previousBackup.Tenants) } else { $null })
+        Set-BackupNodeHighlight -TreeViewItem $TreeViewItem_Backup -FolderData $Object -ChangeInfo $ChangeInfo -PreviousBackupName $previousBackup.Name
 
-        # Update the TreeViewItem Background and Tooltip based on changes
-        Set-BackupNodeHighlight -TreeViewItem $TreeViewItem_Folder -FolderData $_ -ChangeInfo $ChangeInfo -PreviousBackupName $previousBackup.Name
-        
-        # Lets Assume there is only 1 tenant for now
-        # Add the Tenant Information as a child node under the backup folder node
-        $TreeViewItem_Tenant = New-Object System.Windows.Controls.TreeViewItem
-        $TreeViewItem_Tenant.Header = if ($_.Tenants.TenantFriendlyName) { $_.Tenants.TenantFriendlyName } else { "Unknown Tenant" }
-        $TreeViewItem_Tenant.Tag = $_
-        $TreeViewItem_Tenant.ToolTip = "$($_.Tenants.TenantFriendlyName)"
+        foreach ($Tenant in @($Object.Tenants)) {
+            if (-not $Tenant) {
+                continue
+            }
+            $TreeViewItem_Tenant = New-Object System.Windows.Controls.TreeViewItem
+            $TreeViewItem_Tenant.Header = if ($Tenant.Name) { "$($Tenant.Name)" } else { "Tenant" }
+            $TreeViewItem_Tenant.Tag = @{
+                Level    = "Tenant"
+                Name     = $Object.Name
+                FullName = $Object.FullName
+                Tenant   = $Tenant
+            }
+            
+            $TreeViewItem_Backup.Items.Add($TreeViewItem_Tenant)
+        }
 
-        $TreeViewItem_Folder.Items.Add($TreeViewItem_Tenant)
-
-        # Add the TreeViewItem to the Parent Node
-        $TreeViewItem_Parent.Items.Add($TreeViewItem_Folder)
+        # Add the Backup Folder node to the Root
+        $TreeViewItem_Parent.Items.Add($TreeViewItem_Backup)
 
         # Update the previous backup variable for the next iteration
-        $previousBackup = $_
+        $previousBackup = $Object
     }
 
     $TreeBackupTenants.Items.Add($TreeViewItem_Parent)
-    # Expand the root item in the TreeView for better visibility of backup folders
     $TreeViewItem_Parent.IsExpanded = $true
 }
 
@@ -593,35 +600,15 @@ $LnkAppMoreInfo.Add_Click({
 $TreeBackupTenants.Add_SelectedItemChanged({
         $SelectedNode = $TreeBackupTenants.SelectedItem
 
-        # If no node is selected, clear the product details and selected folder information.
-        if (-not $SelectedNode) {
-            Clear-TenantDetails
-            Clear-SelectedFolder
-            return
-        }
-        # If the selected node doesn't have a Tag property, clear the product details and selected folder information.
-        elseif (-not $SelectedNode.Tag) {
-            Clear-TenantDetails
-            Clear-SelectedFolder
-            return
-        }
-        # If the selected node is the Backup folder node, only clear the tenant details
-        elseif (($SelectedNode.Header) -eq ($SelectedNode.Tag.Name)) {
-            Clear-TenantDetails
-            Set-SelectedFolder -SelectedNode $SelectedNode
+        if (-not $SelectedNode -or -not $SelectedNode.Tag) {
             return
         }
 
+        Clear-TenantDetails
         Set-SelectedFolder -SelectedNode $SelectedNode
-        Set-TenantDetails -TenantData $SelectedNode.Tag.Tenants
-    })
 
-$TopBanner.Add_MouseLeftButtonDown({
-        try {
-            $formIntuneOptions.DragMove()
-        }
-        catch {
-            # Ignore drag exceptions when mouse state is not valid.
+        if ($SelectedNode.Tag.Level -eq "Tenant") {
+            Set-TenantDetails -TenantData $SelectedNode.Tag.Tenant
         }
     })
 
@@ -640,9 +627,14 @@ $BtnOpenFolder.Add_Click({
         }
     })
 
-$BtnClose.Add_Click({
-        $formIntuneOptions.DialogResult = $true
+$BtnCloseBanner.Add_Click({
         $formIntuneOptions.Close()
+    })
+$BtnClose.Add_Click({
+        $formIntuneOptions.Close()
+    })
+$TopBanner.Add_MouseLeftButtonDown({
+        $formIntuneOptions.DragMove()
     })
 
 $null = $formIntuneOptions.ShowDialog()

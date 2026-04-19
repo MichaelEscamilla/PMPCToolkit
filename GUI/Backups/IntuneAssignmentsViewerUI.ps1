@@ -579,8 +579,8 @@ function Set-SelectedFolder {
 
 #### Form Load #####
 $formIntuneAssignments.Add_Loaded({
-        $script:TreeViewItemsSource = @($TreeViewItems)
-        Update-TreeView -ObjectData $script:TreeViewItemsSource
+       #$script:TreeViewItemsSource = @($TreeViewItems)
+        Update-TreeView -ObjectData $TreeViewItems
     })
 
 $TxtProductSearch.Add_TextChanged({
@@ -595,7 +595,6 @@ $TreeBackupFolders.Add_SelectedItemChanged({
         }
 
         Clear-ProductDetails
-        
         Set-SelectedFolder -SelectedNode $SelectedNode
 
         if ($SelectedNode.Tag.Level -eq 'Product') {

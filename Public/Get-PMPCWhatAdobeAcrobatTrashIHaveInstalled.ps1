@@ -1,3 +1,30 @@
+<#
+.SYNOPSIS
+Identifies installed Adobe Acrobat products and matches them against known Patch My PC MSP target product codes.
+
+.DESCRIPTION
+Reads a Patch My PC installed software CSV file or a product code and compares the results against the
+bundled AdobeAcrobat.json reference data. Returns matching entries that include the MSP title,
+the matched product code, and all associated target product codes.
+
+.PARAMETER Path
+One or more paths to Patch My PC installed software CSV files. Accepts pipeline input.
+Each file is scanned for entries whose DisplayName contains 'Adobe Acrobat', and any matching
+registry keys are looked up in AdobeAcrobat.json.
+
+.PARAMETER ProductCode
+A single product code (GUID) to look up directly in AdobeAcrobat.json without processing a CSV file.
+
+.EXAMPLE
+Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled -Path "C:\Temp\InstalledSoftware.csv"
+
+Processes the specified CSV file and outputs any Adobe Acrobat entries that match known MSP product codes.
+
+.EXAMPLE
+Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled -ProductCode "{AC76BA86-1033-FFFF-7760-BC15014EA700}"
+
+Looks up the specified product code directly in AdobeAcrobat.json and returns the matching MSP entry.
+#>
 function Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled {
 	[CmdletBinding(DefaultParameterSetName = 'Path')]
 	param (
@@ -17,9 +44,9 @@ function Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled {
 		$matchingEntry = $AdobeAcrobatMSP | Where-Object { $_.TargetProductCode -match $ProductCode }
 		if ($matchingEntry) {
 			[PSCustomObject]@{
-				Title             = $matchingEntry.Title
+				Title              = $matchingEntry.Title
 				MatchedProductCode = ($matchingEntry.TargetProductCode | Where-Object { $_ -match $ProductCode })
-				TargetProductCode = $matchingEntry.TargetProductCode
+				TargetProductCode  = $matchingEntry.TargetProductCode
 			}
 		}
 		else {
@@ -55,9 +82,9 @@ function Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled {
 					Write-Host "Match found for $($software.DisplayName) with RegistryKey: $($software.RegistryKey)" -ForegroundColor Green
 					#$matchingEntry | Select-Object Title, @{Name='TargetProductCode';Expression={$_.TargetProductCode | Where-Object { $_ -match $software.RegistryKey }}} | Format-Table
 					[PSCustomObject]@{
-						Title             = $matchingEntry.Title
+						Title              = $matchingEntry.Title
 						MatchedProductCode = ($matchingEntry.TargetProductCode | Where-Object { $_ -match $software.RegistryKey })
-						TargetProductCode = $matchingEntry.TargetProductCode
+						TargetProductCode  = $matchingEntry.TargetProductCode
 					}
 				}
 			}
