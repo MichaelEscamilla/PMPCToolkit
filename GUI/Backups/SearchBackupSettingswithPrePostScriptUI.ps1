@@ -962,10 +962,6 @@ $formProperties.Add_Loaded({
         Update-TreeView -ObjectData $TreeViewItems
     })
 
-$lnkMoreInfo.Add_Click({
-        Start-Process "https://learn.microsoft.com/"
-    })
-
 $TreeVendorsProducts.Add_SelectedItemChanged({
         $SelectedNode = $TreeVendorsProducts.SelectedItem
 
