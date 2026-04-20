@@ -55,6 +55,9 @@ function Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled {
 		return
 	}
 
+	# get all files from $Path if a wildcard is used and process each file
+	$Path = Get-ChildItem -Path $Path -Filter *.csv -File -Recurse
+
 	foreach ($FilePath in $Path) {
 		Write-Host "Processing file: $FilePath" -ForegroundColor Cyan
 		$InstSoftCSVAdobe = $null
@@ -81,11 +84,11 @@ function Get-PMPCWhatAdobeAcrobatTrashIHaveInstalled {
 				if ($matchingEntry) {
 					Write-Host "Match found for $($software.DisplayName) with RegistryKey: $($software.RegistryKey)" -ForegroundColor Green
 					#$matchingEntry | Select-Object Title, @{Name='TargetProductCode';Expression={$_.TargetProductCode | Where-Object { $_ -match $software.RegistryKey }}} | Format-Table
-					[PSCustomObject]@{
+					Write-Host $([PSCustomObject]@{
 						Title              = $matchingEntry.Title
 						MatchedProductCode = ($matchingEntry.TargetProductCode | Where-Object { $_ -match $software.RegistryKey })
 						TargetProductCode  = $matchingEntry.TargetProductCode
-					}
+					} | Out-String)
 				}
 			}
 		}

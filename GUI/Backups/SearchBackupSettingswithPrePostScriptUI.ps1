@@ -109,7 +109,26 @@ Add-Type -AssemblyName WindowsBase
 
             <GroupBox Grid.Column="0" Header="Vendors and Products" Padding="8">
                 <Grid>
-                    <TreeView Name="TreeVendorsProducts"
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Margin="0,0,0,4"
+                               Text="Search Product"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Row="0"
+                             Name="TxtProductSearch"
+                             Margin="95,0,0,0"
+                             Height="24"
+                             IsReadOnly="False"
+                             VerticalAlignment="Center"/>
+
+                    <TreeView Grid.Row="2"
+                              Name="TreeVendorsProducts"
                               BorderBrush="#D2D2D2"
                               BorderThickness="1"
                               Background="White"/>
@@ -956,10 +975,50 @@ function Set-SelectedProductDetails {
     Update-TabHighlights -ProductData $ProductData
 }
 
+function Invoke-ProductSearchFilter {
+    [CmdletBinding()]
+    param ()
+
+    $search = $TxtProductSearch.Text.Trim()
+    $hasSearch = -not [string]::IsNullOrWhiteSpace($search)
+
+    $rootNode = $TreeVendorsProducts.Items[0]
+    if (-not $rootNode) { return }
+
+    foreach ($folderNode in $rootNode.Items) {
+        $folderHasMatch = $false
+
+        foreach ($groupNode in $folderNode.Items) {
+            $groupHasMatch = $false
+
+            foreach ($productItem in $groupNode.Items) {
+                if ($hasSearch) {
+                    $isMatch = ([string]$productItem.Header).IndexOf($search, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                    $productItem.Visibility = if ($isMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+                    if ($isMatch) { $groupHasMatch = $true }
+                }
+                else {
+                    $productItem.Visibility = [System.Windows.Visibility]::Visible
+                    $groupHasMatch = $true
+                }
+            }
+
+            $groupNode.Visibility = if ($groupHasMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+            if ($groupHasMatch) { $folderHasMatch = $true }
+        }
+
+        $folderNode.Visibility = if ($folderHasMatch) { [System.Windows.Visibility]::Visible } else { [System.Windows.Visibility]::Collapsed }
+    }
+}
+
 #### Form Load #####
 $formProperties.Add_Loaded({
         # Update the TreeView
         Update-TreeView -ObjectData $TreeViewItems
+    })
+
+$TxtProductSearch.Add_TextChanged({
+        Invoke-ProductSearchFilter
     })
 
 $TreeVendorsProducts.Add_SelectedItemChanged({

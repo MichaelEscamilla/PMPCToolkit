@@ -585,10 +585,6 @@ $formIntuneOptions.Add_Loaded({
         Update-IntuneTreeView -ObjectData $TreeViewItems
     })
 
-$LnkMoreInfo.Add_Click({
-        Start-Process "https://patchmypc.com/"
-    })
-
 $LnkAuthMoreInfo.Add_Click({
         Start-Process "https://docs.patchmypc.com/installation-guides/intune/azure-app-registration"
     })
