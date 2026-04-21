@@ -75,10 +75,16 @@ function Search-BackupSettingsEnabledTabsV2 {
             "N/A"
         }
 
+        $products = @()
+        foreach ($SearchPattern in $node.EnabledProductsPath) {
+            $products += $SearchPattern.product
+        }
+
         $tabsList += @{
             Name                = $node.Alias
             Enabled             = $enabled
             EnabledProductCount = $node.EnabledProductsPath.Count
+            Products            = $products
         }
     }
 

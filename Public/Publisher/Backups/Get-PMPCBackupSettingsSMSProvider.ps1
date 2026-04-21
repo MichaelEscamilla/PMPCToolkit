@@ -36,6 +36,11 @@ function Get-PMPCBackupSettingsSMSProvider {
     # Get Backup Restored Folders
     $BackupRestoredFoldersObject = Get-BackupRestoredFolders -BackupFilesPath $BackupFilesPath -BackupFolderName $BackupFolderName
 
-    # Search for SMS Provider Settings in the backup settings files
-    Search-BackupSettingsSMSProvider -SettingsFileObject $BackupRestoredFoldersObject
+    # Add the SMS Provider Search Results to the Backup Restored Folders Object
+    foreach ($FolderInfo in $BackupRestoredFoldersObject) {
+        $BackupResults = Search-BackupSettingsSMSProviderV2 -SettingsFilePath (Join-Path -Path $FolderInfo.FullName -ChildPath "Settings.xml")
+        $FolderInfo | Add-Member -MemberType NoteProperty -Name "SMSProvider" -Value $BackupResults
+    }
+
+    & "$($MyInvocation.MyCommand.Module.ModuleBase)\GUI\Backups\SMSProviderBackupViewerUI.ps1" -TreeViewItems $BackupRestoredFoldersObject
 }

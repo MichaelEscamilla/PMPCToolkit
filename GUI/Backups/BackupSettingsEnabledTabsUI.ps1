@@ -111,6 +111,8 @@ Add-Type -AssemblyName WindowsBase
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="8"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <!-- Selected Backup Folder -->
@@ -171,6 +173,22 @@ Add-Type -AssemblyName WindowsBase
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                     <GridViewColumn Header="Product Count" Width="120" DisplayMemberBinding="{Binding EnabledProductCount}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
+
+                    <!-- Products -->
+                    <GroupBox Grid.Row="4" Header="Products" Padding="8">
+                        <ListView Name="LvwProducts"
+                                  BorderBrush="#D2D2D2"
+                                  BorderThickness="1"
+                                  Background="White"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Product Name" Width="400" DisplayMemberBinding="{Binding Name}"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
@@ -343,6 +361,26 @@ function Set-SelectedFolder {
 
 function Clear-EnabledTabsDetails {
     $LvwEnabledTabs.Items.Clear()
+    Clear-ProductsDetails
+}
+
+function Clear-ProductsDetails {
+    $LvwProducts.Items.Clear()
+}
+
+function Set-ProductsDetails {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        $Products
+    )
+
+    Clear-ProductsDetails
+
+    foreach ($product in $Products) {
+        $LvwProducts.Items.Add([PSCustomObject]@{ Name = $product })
+    }
 }
 
 function Set-EnabledTabsDetails {
@@ -389,6 +427,29 @@ $TreeBackupFolders.Add_SelectedItemChanged({
         # Set the Backup Folder info and populate the enabled tabs list
         Set-SelectedFolder -SelectedNode $SelectedNode
         Set-EnabledTabsDetails -TabItems @($SelectedNode.Tag.Items)
+    })
+
+$LvwEnabledTabs.Add_SelectionChanged({
+        $selectedTab = $LvwEnabledTabs.SelectedItem
+        if (-not $selectedTab) {
+            Clear-ProductsDetails
+            return
+        }
+
+        # Find the matching tab data from the current tree selection to get its Products array
+        $SelectedNode = $TreeBackupFolders.SelectedItem
+        if (-not $SelectedNode -or -not $SelectedNode.Tag) {
+            Clear-ProductsDetails
+            return
+        }
+
+        $matchedTab = @($SelectedNode.Tag.Items) | Where-Object { $_.Name -eq $selectedTab.Name }
+        if ($matchedTab -and $matchedTab.Products) {
+            Set-ProductsDetails -Products @($matchedTab.Products)
+        }
+        else {
+            Clear-ProductsDetails
+        }
     })
 
 $BtnOpenFolder.Add_Click({
